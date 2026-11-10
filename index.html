@@ -1,0 +1,1469 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Micelia · Explorá la red que sostiene la vida</title>
+  <meta name="description" content="Micelia: globo interactivo y gratuito para explorar los hongos micorrícicos del mundo: riqueza, rareza, redes de hifas, áreas protegidas y recorridos narrados en español.">
+  <meta property="og:title" content="Micelia · Explorá la red que sostiene la vida">
+  <meta property="og:site_name" content="Micelia">
+  <meta property="og:description" content="Explorá sobre un globo dónde viven los hongos micorrícicos y cuánto de ese mundo subterráneo está protegido.">
+  <meta property="og:image" content="https://guidoparra.github.io/micelia/texturas/compartir.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:url" content="https://guidoparra.github.io/micelia/">
+  <meta property="og:locale" content="es_AR">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://guidoparra.github.io/micelia/">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cg%20stroke%3D%22%23ffb300%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20fill%3D%22none%22%3E%3Cpath%20d%3D%22M16%2016L6.5%208.5M16%2016L26.5%209.5M16%2016L9%2025.5M16%2016L25%2025M6.5%208.5L3.5%2014M26.5%209.5L28.5%203.5M9%2025.5L3.5%2023.5M25%2025L29%2020%22/%3E%3C/g%3E%3Cg%20fill%3D%22%23ffb300%22%3E%3Ccircle%20cx%3D%2216%22%20cy%3D%2216%22%20r%3D%223.6%22/%3E%3Ccircle%20cx%3D%226.5%22%20cy%3D%228.5%22%20r%3D%222.1%22/%3E%3Ccircle%20cx%3D%2226.5%22%20cy%3D%229.5%22%20r%3D%222.1%22/%3E%3Ccircle%20cx%3D%229%22%20cy%3D%2225.5%22%20r%3D%222.1%22/%3E%3Ccircle%20cx%3D%2225%22%20cy%3D%2225%22%20r%3D%222.1%22/%3E%3C/g%3E%3C/svg%3E">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="anonymous">
+  <style>
+    body { margin: 0; font-family: system-ui, sans-serif; background: #0b0f14; color: #e8eef5; }
+    .marca { display: flex; align-items: center; gap: 7px; color: #f3f6fa; text-decoration: none; font-weight: 800;
+      letter-spacing: 0.04em; font-size: 17px; margin-right: 6px; }
+    .marca .logo { width: 24px; height: 24px; }
+    .p-marca { display: inline-flex; align-items: center; gap: 10px; font-size: 22px; font-weight: 800; letter-spacing: 0.12em;
+      text-transform: uppercase; color: #ffe3a3; margin-bottom: 10px; opacity: 0; animation: pAparece 1.2s 0.1s forwards; }
+    .p-marca .logo { width: 34px; height: 34px; filter: drop-shadow(0 0 8px rgba(255,179,0,.6)); }
+    #barra {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+      padding: 10px 14px; background: rgba(11, 15, 20, 0.9);
+    }
+    #barra .grupo { display: flex; gap: 6px; }
+    button {
+      background: #1c2733; color: #e8eef5; border: 1px solid #34465a;
+      padding: 6px 12px; border-radius: 6px; cursor: pointer;
+    }
+    button:disabled { opacity: 0.4; cursor: default; }
+    button.activo { background: #2e7d5b; border-color: #2e7d5b; }
+    button.destacado { border-color: #ffb300; color: #ffb300; }
+    #aviso { font-size: 12px; color: #ffb300; margin-left: auto; }
+    #globo, #mapa { position: absolute; top: 56px; left: 0; right: 0; bottom: 0; }
+    #mapa { display: none; background: #0b0f14; }
+    #ficha {
+      position: fixed; right: 14px; bottom: 14px; z-index: 1000; width: 280px;
+      background: rgba(11, 15, 20, 0.92); border: 1px solid #34465a;
+      border-radius: 8px; padding: 12px 14px; font-size: 14px; line-height: 1.4;
+      max-height: calc(100vh - 140px); overflow-y: auto;
+    }
+    #ficha h3 { margin: 0 0 6px 0; display: flex; justify-content: space-between; align-items: center; }
+    #ficha h3 button { padding: 0 9px; font-size: 16px; line-height: 22px; }
+    #ficha.plegada .cuerpo { display: none; }
+    #ficha.plegada h3 { margin: 0; }
+    #recorrido {
+      display: none; position: fixed; left: 14px; bottom: 14px; z-index: 1001; width: 360px;
+      max-width: calc(100vw - 28px);
+      background: rgba(11, 15, 20, 0.95); border: 1px solid #ffb300;
+      border-radius: 8px; padding: 14px 16px; font-size: 14px; line-height: 1.5;
+    }
+    #recorrido { max-height: calc(100vh - 120px); overflow-y: auto; box-sizing: border-box; }
+    body.en-recorrido #leyenda { left: auto; right: 14px; }
+    .foto-lugar { margin: 0 0 10px 0; }
+    .foto-lugar img { width: 100%; height: 170px; object-fit: cover; border-radius: 6px; display: block; background: #1c2733; }
+    .credito-foto { font-size: 10px; color: #7f91a5; margin-top: 3px; line-height: 1.3; }
+    .credito-foto a, .hongos a { color: #9fc5ff; }
+    .hongos { margin-top: 10px; }
+    .hongos .tit { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #9fb0c3; margin-bottom: 4px; }
+    .hongos .grilla { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .hongos figure { margin: 0; font-size: 11px; line-height: 1.25; }
+    .hongos figure img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 5px; display: block; background: #1c2733; }
+    .hongos figcaption .sp { display: block; margin-top: 2px; }
+    .hongos figcaption .sp i { color: #c9d6e3; }
+    .hongos figcaption .au { display: block; font-size: 9.5px; color: #7f91a5; }
+    .hongos .aviso { font-size: 10px; color: #7f91a5; margin-top: 5px; }
+    #recorrido .progreso { font-size: 12px; color: #9fb0c3; margin-bottom: 4px; }
+    #recorrido h3 { margin: 0 0 8px 0; }
+    #recorrido .fuente { font-size: 12px; color: #9fb0c3; margin-top: 8px; }
+    #recorrido .nota { font-size: 11px; color: #ffb300; margin-top: 8px; }
+    #recorrido .botones { display: flex; gap: 6px; margin-top: 12px; }
+    #recorrido .opcion { display: block; width: 100%; text-align: left; margin-bottom: 8px; }
+    #recorrido .opcion small { display: block; color: #9fb0c3; margin-top: 2px; }
+    button.apoya { border-color: #40dcaa; color: #40dcaa; }
+    #apoya .org { display: flex; gap: 14px; align-items: flex-start; padding: 14px; margin: 12px 0;
+      border: 1px solid #34465a; border-radius: 10px; background: #0d141c; }
+    #apoya .org .ico { font-size: 26px; line-height: 1; }
+    #apoya .org h4 { margin: 0 0 4px 0; font-size: 16px; color: #e8eef5; }
+    #apoya .org p { margin: 0 0 8px 0; font-size: 14px; color: #c9d6e3; }
+    #apoya .org a.donar { display: inline-block; padding: 6px 12px; border-radius: 6px; background: #40dcaa; color: #0b0f14;
+      font-weight: 600; text-decoration: none; }
+    #apoya .org a.donar:hover { background: #6ff0c6; }
+    #apoya .aclaracion { font-size: 13px; color: #9fb0c3; border-left: 3px solid #ffb300; padding-left: 10px; }
+    #acerca, #apoya {
+      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 2000;
+      background: rgba(5, 8, 12, 0.92); overflow-y: auto;
+    }
+    #acerca .contenido, #apoya .contenido {
+      max-width: 720px; margin: 40px auto; padding: 24px 28px;
+      background: #111820; border: 1px solid #34465a; border-radius: 10px;
+      font-size: 15px; line-height: 1.6;
+    }
+    #acerca h2, #apoya h2 { margin-top: 0; }
+    #acerca h3, #apoya h3 { margin: 22px 0 6px 0; color: #ffb300; font-size: 16px; }
+    #acerca a, #apoya a { color: #7fb8ff; }
+    #acerca ul { padding-left: 20px; }
+    #acerca li { margin-bottom: 4px; }
+    #acerca .autor { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; }
+    #acerca .autor img { width: 180px; max-width: 100%; border-radius: 12px; border: 1px solid #34465a; }
+    #acerca .autor p { flex: 1; min-width: 220px; margin: 0; }
+    select {
+      background: #1c2733; color: #e8eef5; border: 1px solid #34465a;
+      padding: 6px 10px; border-radius: 6px; font: inherit; font-size: 14px;
+    }
+    #leyenda {
+      position: fixed; left: 14px; top: calc(var(--alto-barra, 56px) + 14px); z-index: 1000; width: 260px;
+      background: rgba(11, 15, 20, 0.92); border: 1px solid #34465a;
+      border-radius: 8px; padding: 10px 12px; font-size: 13px; line-height: 1.4;
+    }
+    #leyenda .titulo { font-weight: 600; margin-bottom: 4px; }
+    #leyenda .desc { color: #9fb0c3; font-size: 12px; margin-bottom: 8px; }
+    #leyenda .barra-color { height: 10px; border-radius: 3px; }
+    #leyenda .extremos { display: flex; justify-content: space-between; font-size: 11px; color: #9fb0c3; margin-top: 3px; }
+    #leyenda .credito { font-size: 11px; color: #9fb0c3; margin-top: 8px; }
+    #leyenda .credito a { color: #7fb8ff; }
+    #divisor { position: absolute; top: 0; bottom: 0; width: 0; z-index: 800; display: none; pointer-events: none; }
+    #divisor .linea { position: absolute; top: 0; bottom: 0; left: -1px; width: 2px; background: #ffb300; box-shadow: 0 0 8px rgba(255,179,0,.7); }
+    #divisor .manija { position: absolute; top: 50%; left: -19px; width: 38px; height: 38px; margin-top: -19px; border-radius: 50%;
+      background: #ffb300; color: #0b0f14; font: bold 18px system-ui; display: flex; align-items: center; justify-content: center;
+      cursor: ew-resize; pointer-events: auto; box-shadow: 0 0 12px rgba(0,0,0,.6); touch-action: none; user-select: none; }
+    .etq-comp { position: absolute; top: calc(50% - 62px); z-index: 801; background: rgba(11,15,20,.88); border: 1px solid #ffb300;
+      color: #e8eef5; font-size: 12px; padding: 4px 8px; border-radius: 5px; white-space: nowrap; pointer-events: none; display: none; }
+    #etqA { right: calc(100% + 10px); }
+    #etqB { left: 10px; }
+    /* ---------- PORTADA ---------- */
+    #portada { position: fixed; inset: 0; z-index: 3000; display: flex; flex-direction: column; justify-content: center;
+      align-items: center; padding: 24px; box-sizing: border-box; color: #f3f6fa; transition: opacity 0.9s ease; }
+    #portada.saliendo { opacity: 0; pointer-events: none; }
+    #portada .p-sombra { position: absolute; inset: 0; pointer-events: none;
+      background: radial-gradient(ellipse at center, rgba(6,8,16,0.42) 0%, rgba(6,8,16,0.18) 45%, rgba(6,8,16,0.65) 100%); }
+    #portada .p-texto { position: relative; max-width: 760px; text-align: center; }
+    .p-antetitulo { font-size: 12px; letter-spacing: 0.32em; text-transform: uppercase; color: #ffcf66; margin-bottom: 18px;
+      opacity: 0; animation: pAparece 1.2s 0.3s forwards; }
+    .p-titulo { margin: 0; font-family: Impact, "Arial Narrow Bold", "Arial Black", sans-serif; font-weight: 900;
+      text-transform: uppercase; line-height: 0.92; letter-spacing: 0.01em; font-size: clamp(44px, 8.6vw, 112px);
+      color: transparent; -webkit-text-stroke: 1.6px #ffe3a3; text-shadow: 0 0 28px rgba(255,179,0,0.35); }
+    .p-titulo span { display: block; opacity: 0; transform: translateY(18px); animation: pSube 1.1s forwards; }
+    .p-titulo span:nth-child(2) { animation-delay: 0.35s; }
+    .p-titulo:hover { color: rgba(255,179,0,0.12); }
+    .p-bajada { font-size: clamp(15px, 1.7vw, 18px); line-height: 1.55; color: #d9e2ec; margin: 22px auto 0; max-width: 600px;
+      opacity: 0; animation: pAparece 1.2s 0.9s forwards; }
+    .p-dato { display: inline-flex; gap: 12px; align-items: center; text-align: left; margin-top: 22px; padding: 10px 16px;
+      border: 1px solid rgba(255,179,0,0.55); border-radius: 10px; background: rgba(11,15,20,0.6); max-width: 520px;
+      opacity: 0; animation: pAparece 1.2s 1.3s forwards; }
+    .p-dato b { font-size: 34px; color: #ffb300; font-family: Impact, "Arial Black", sans-serif; font-weight: 900; }
+    .p-dato span { font-size: 13px; line-height: 1.4; color: #e8eef5; }
+    .p-dato small { color: #9fb0c3; }
+    .p-acciones { position: absolute; right: 28px; bottom: 34px; display: flex; flex-direction: column; gap: 16px; align-items: flex-end;
+      opacity: 0; animation: pAparece 1s 1.7s forwards; }
+    .p-boton { display: flex; align-items: center; gap: 14px; background: none; border: 0; padding: 0; color: #f3f6fa; cursor: pointer; }
+    .p-etq { display: flex; flex-direction: column; align-items: flex-end; font-size: 22px; font-weight: 700; }
+    .p-etq small { white-space: nowrap; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #9fb0c3; font-weight: 400; }
+    .p-recorrido .p-etq small { color: #ffcf66; }
+    .p-mini { width: 58px; height: 58px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.35);
+      background: url(texturas/compartir.jpg) 58% 40% / 300% no-repeat; }
+    .p-circulo { width: 74px; height: 74px; border-radius: 50%; background: #ffb300; color: #0b0f14; font-size: 30px;
+      display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 0 rgba(255,179,0,0.6); animation: pLatido 2.4s 2.5s infinite; }
+    .p-boton:hover .p-circulo { transform: scale(1.06); }
+    .p-boton:hover .p-mini { border-color: #ffb300; }
+    .p-boton:focus-visible { outline: 2px solid #ffb300; outline-offset: 6px; border-radius: 40px; }
+    .p-pie { position: absolute; left: 24px; bottom: 18px; font-size: 11px; color: #9fb0c3; }
+    .p-pie a { color: #ffcf66; }
+    body.en-portada #barra, body.en-portada #leyenda, body.en-portada #ficha, body.en-portada #creditoSat { opacity: 0; pointer-events: none; }
+    #barra, #leyenda, #ficha, #creditoSat { transition: opacity 0.8s ease; }
+    @keyframes pAparece { to { opacity: 1; } }
+    @keyframes pSube { to { opacity: 1; transform: none; } }
+    @keyframes pLatido { 0% { box-shadow: 0 0 0 0 rgba(255,179,0,0.55); } 70% { box-shadow: 0 0 0 18px rgba(255,179,0,0); } 100% { box-shadow: 0 0 0 0 rgba(255,179,0,0); } }
+    @media (max-width: 700px) {
+      #portada { justify-content: flex-start; padding-top: 12vh; }
+      .p-acciones { right: 50%; transform: translateX(50%); bottom: 54px; flex-direction: row; gap: 22px; align-items: center; }
+      .p-etq { font-size: 17px; }
+      .p-mini { width: 46px; height: 46px; } .p-circulo { width: 58px; height: 58px; font-size: 24px; }
+      .p-pie { left: 0; right: 0; text-align: center; bottom: 14px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .p-titulo span, .p-antetitulo, .p-bajada, .p-dato, .p-acciones { animation: none; opacity: 1; transform: none; }
+      .p-circulo { animation: none; }
+    }
+    #creditoSat { position: fixed; bottom: 4px; left: 50%; transform: translateX(-50%); z-index: 999;
+      font-size: 10px; color: #9fb0c3; background: rgba(11, 15, 20, 0.7); padding: 2px 8px; border-radius: 4px;
+      max-width: calc(100vw - 20px); text-align: center; }
+    #creditoSat a { color: #9fc5ff; }
+    @media (max-width: 700px) { #creditoSat { bottom: auto; top: calc(var(--alto-barra, 56px) + 2px); font-size: 9px; white-space: nowrap; } }
+    #leyenda .categoria { display: flex; align-items: center; gap: 8px; margin: 3px 0; }
+    #leyenda .muestra { width: 14px; height: 14px; border-radius: 3px; flex: none; }
+    #ficha .fila { display: flex; justify-content: space-between; gap: 8px; margin: 2px 0; font-size: 13px; }
+    #ficha .fila.actual { color: #ffb300; }
+    #ficha .fila span:last-child { text-align: right; white-space: nowrap; }
+    #ficha .grupo-ficha { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #9fb0c3; margin: 8px 0 2px 0; }
+    #ficha .coords { font-size: 12px; color: #9fb0c3; margin-bottom: 6px; }
+    #ficha .pie { font-size: 11px; color: #9fb0c3; margin-top: 8px; }
+    @media (max-width: 700px) {
+      #barra { gap: 6px; padding: 8px 10px; }
+      #barra .grupo { flex-wrap: wrap; }
+      #barra button { padding: 6px 9px; font-size: 13px; }
+      #barra select { max-width: calc(100vw - 20px); }
+      .leaflet-control-attribution { font-size: 9px; }
+      #aviso { font-size: 11px; margin-left: 0; }
+      #leyenda { top: auto; bottom: 10px; left: 10px; width: calc(100vw - 46px); padding: 8px 12px; }
+      #leyenda .desc { display: none; }
+      #ficha { bottom: 100px; left: 10px; right: auto; width: calc(100vw - 50px); max-height: 42vh; }
+      #recorrido { left: 10px; bottom: 100px; max-width: calc(100vw - 20px); box-sizing: border-box; }
+      body.en-recorrido #ficha { display: none; }
+      body.en-recorrido #leyenda { right: auto; left: 10px; }
+      #recorrido { max-height: 52vh; }
+      .foto-lugar img { height: 130px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="barra">
+    <a class="marca" href="?explorar" title="Micelia · Explorá la red que sostiene la vida"><svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><g stroke="#ffb300" stroke-width="2" stroke-linecap="round" fill="none"><path d="M16 16L6.5 8.5M16 16L26.5 9.5M16 16L9 25.5M16 16L25 25M6.5 8.5L3.5 14M26.5 9.5L28.5 3.5M9 25.5L3.5 23.5M25 25L29 20"/></g><g fill="#ffb300"><circle cx="16" cy="16" r="3.6"/><circle cx="6.5" cy="8.5" r="2.1"/><circle cx="26.5" cy="9.5" r="2.1"/><circle cx="9" cy="25.5" r="2.1"/><circle cx="25" cy="25" r="2.1"/></g></svg><span>Micelia</span></a>
+    <div class="grupo">
+      <button id="btn3d" class="activo">Globo 3D</button>
+      <button id="btn2d">Mapa 2D</button>
+    </div>
+    <div class="grupo">
+      <select id="selCapa" aria-label="Capa de datos">
+        <option value="">Sin capa (solo la Tierra)</option>
+      </select>
+    </div>
+    <div class="grupo">
+      <button id="btn3dDatos" title="Muestra la capa como columnas en relieve">Columnas 3D</button>
+      <button id="btnNoche" title="Luces nocturnas de la Tierra">Modo noche</button>
+      <button id="btnComparar" title="Compará dos capas con una cortina deslizable">Comparar</button>
+      <select id="selCapaB" aria-label="Capa para comparar" style="display:none"></select>
+      <button id="btnRecorrido" class="destacado">Recorridos</button>
+      <button id="btnApoya" class="apoya">Apoyá</button>
+      <button id="btnAcerca">Acerca de</button>
+    </div>
+    <div id="aviso">Mapas predictivos de SPUN: son modelos, no mediciones directas</div>
+  </div>
+
+  <div id="portada" role="dialog" aria-label="Portada">
+    <div class="p-sombra"></div>
+    <div class="p-texto">
+      <div class="p-marca"><svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><g stroke="#ffb300" stroke-width="2" stroke-linecap="round" fill="none"><path d="M16 16L6.5 8.5M16 16L26.5 9.5M16 16L9 25.5M16 16L25 25M6.5 8.5L3.5 14M26.5 9.5L28.5 3.5M9 25.5L3.5 23.5M25 25L29 20"/></g><g fill="#ffb300"><circle cx="16" cy="16" r="3.6"/><circle cx="6.5" cy="8.5" r="2.1"/><circle cx="26.5" cy="9.5" r="2.1"/><circle cx="9" cy="25.5" r="2.1"/><circle cx="25" cy="25" r="2.1"/></g></svg><span>Micelia</span></div>
+      <div class="p-antetitulo">Explorá la red que sostiene la vida</div>
+      <h1 class="p-titulo"><span>El planeta</span><span>subterráneo</span></h1>
+      <p class="p-bajada">Los hongos micorrícicos tejen bajo el suelo una red viva que se asocia con más del 80&nbsp;% de las plantas.
+        Recorré el planeta para ver dónde prosperan, qué tan bien los conocemos y cuánto de ese mundo está protegido.</p>
+      <div class="p-dato"><b>9,5&nbsp;%</b><span>de los puntos calientes de diversidad micorrícica está dentro de áreas protegidas.<br>
+        <small>Van Nuland et al., 2025, <i>Nature</i></small></span></div>
+    </div>
+    <div class="p-acciones">
+      <button class="p-boton p-explorar" id="pExplorar"><span class="p-etq"><small>Ir directo al</small>Globo</span>
+        <span class="p-mini"></span></button>
+      <button class="p-boton p-recorrido" id="pRecorrido"><span class="p-etq"><small>Empezar por el</small>Recorrido</span>
+        <span class="p-circulo">→</span></button>
+    </div>
+    <div class="p-pie">Micelia · Visualización propia con datos de <a href="https://www.spun.earth" target="_blank" rel="noopener">SPUN</a> (CC BY 4.0) ·
+      <a href="#" id="pSaltar">Saltar la portada</a></div>
+  </div>
+
+  <div id="leyenda"></div>
+  <div id="creditoSat"></div>
+
+  <div id="globo"></div>
+  <div id="mapa"></div>
+
+  <div id="recorrido"></div>
+
+  <div id="ficha">
+    <h3>Micelia</h3>
+    <p>Tocá cualquier lugar del globo o del mapa para ver qué estima el modelo de SPUN en ese
+       punto. Los hongos micorrícicos se asocian con más del 80 % de las especies de plantas y
+       forman redes bajo el suelo.</p>
+  </div>
+
+  <!-- PÁGINA ACERCA DE (en primera persona) -->
+  <div id="apoya" role="dialog" aria-labelledby="tituloApoya">
+    <div class="contenido">
+      <h2 id="tituloApoya">Apoyá a quienes protegen la funga</h2>
+      <p>Esta web es gratuita, no tiene publicidad y no recibe dinero. Si querés ayudar a que los hongos y sus
+         ecosistemas se conozcan y se protejan, podés colaborar directamente con organizaciones que trabajan en eso.</p>
+
+      <div class="org">
+        <div class="ico">🍄</div>
+        <div>
+          <h4>SPUN · Society for the Protection of Underground Networks</h4>
+          <p>Mapea las redes de hongos micorrícicos del mundo junto a investigadores locales. Sus mapas son la base
+             de las capas de esta web.</p>
+          <a class="donar" href="https://www.spun.earth/es/donate" target="_blank" rel="noopener">Donar a SPUN ↗</a>
+        </div>
+      </div>
+
+      <div class="org">
+        <div class="ico">🌱</div>
+        <div>
+          <h4>Fungi Foundation</h4>
+          <p>Fundación nacida en Chile que impulsó reconocer la «funga» junto a la flora y la fauna. Trabaja en
+             educación, ciencia ciudadana y conservación de hongos.</p>
+          <a class="donar" href="https://www.every.org/ffungi/donate" target="_blank" rel="noopener">Donar a Fungi Foundation ↗</a>
+        </div>
+      </div>
+
+      <div class="org">
+        <div class="ico">🌿</div>
+        <div>
+          <h4>Fundación Rewilding Argentina</h4>
+          <p>Restaura ecosistemas argentinos, como los Esteros del Iberá, una de las paradas del recorrido
+             «Hongos de Argentina». Proteger el ecosistema completo también protege la vida del suelo.</p>
+          <a class="donar" href="https://rewildingargentina.org/donaciones" target="_blank" rel="noopener">Donar a Rewilding Argentina ↗</a>
+        </div>
+      </div>
+
+      <h3>Otras formas de ayudar, sin dinero</h3>
+      <ul>
+        <li>Fotografiá los hongos que encuentres y subilos a <a href="https://www.inaturalist.org" target="_blank" rel="noopener">iNaturalist</a>:
+            cada observación verificada ayuda a saber dónde viven. Algunas ya aparecen en esta web.</li>
+        <li>Compartí este sitio con docentes, estudiantes y personas curiosas.</li>
+        <li>Si encontrás un error en los datos o los textos, escribime desde la sección «Acerca de».</li>
+      </ul>
+
+      <p class="aclaracion">Las donaciones se hacen en los sitios de cada organización y van directamente a ellas:
+         este proyecto no recibe ni administra dinero, y no está afiliado a ninguna de ellas. Te recomiendo
+         conocer su trabajo antes de colaborar.</p>
+
+      <p style="margin-top:24px"><button id="cerrarApoya">Cerrar</button></p>
+    </div>
+  </div>
+
+  <div id="acerca">
+    <div class="contenido">
+      <h2>Acerca de Micelia</h2>
+      <p style="color:#ffcf66;margin-top:-6px">Explorá la red que sostiene la vida.</p>
+
+      <h3>Propósito</h3>
+      <p>Micelia es una experiencia educativa y gratuita para explorar el reino Fungi sobre un
+         globo interactivo. Reúno mapas por capas y recorridos narrados con cifras de fuentes
+         científicas, y busco explicar por qué los hongos son relevantes para los ecosistemas y
+         el clima. No tiene publicidad ni vendo datos.</p>
+
+      <h3>Sobre el autor</h3>
+      <div class="autor">
+        <img src="autor.webp" loading="lazy" width="180" alt="Caricatura del autor rodeado de hongos, con un globo terráqueo y una lupa">
+        <p>Soy Guido, desarrollador independiente en Argentina y entusiasta del reino Fungi. Me mueve la idea de conectar a las personas con un reino asombroso, educando y transmitiendo su conocimiento de manera interactiva. Este es un proyecto educativo y de código abierto, y los comentarios, correcciones y colaboraciones son bienvenidos.</p>
+      </div>
+
+      <h3>Estado actual</h3>
+      <p>Es una primera versión. Las capas del globo y del mapa son los mapas predictivos globales de
+         SPUN (Underground Atlas), que reduje de resolución para la web: las texturas tienen unos
+         10 km por píxel en el ecuador, y los valores de la ficha son promedios en celdas de unos
+         39 km. Para el análisis científico conviene usar los archivos originales. Las cifras de los
+         recorridos provienen de las fuentes citadas en cada parada, aunque las leí a través de
+         resúmenes de prensa y comunicados de los autores; las del recorrido «Hongos de Argentina» son un cálculo mío sobre los mapas.</p>
+
+      <h3>Datos de SPUN</h3>
+      <p>Los mapas de riqueza, rareza y densidad de hifas son de la
+         <a href="https://www.spun.earth" target="_blank" rel="noopener">Society for the Protection of
+         Underground Networks (SPUN)</a> y se publican bajo licencia
+         <a href="https://creativecommons.org/licenses/by/4.0/deed.es" target="_blank" rel="noopener">Creative
+         Commons Atribución 4.0 Internacional (CC BY 4.0)</a>. Los reproyecté a EPSG:4326, reduje su
+         resolución y les apliqué paletas de color propias. Publicaciones originales:</p>
+      <ul>
+        <li>Van Nuland et al. (2025). <i>Global hotspots of mycorrhizal fungal richness are poorly protected.</i> Nature. <a href="https://doi.org/10.1038/s41586-025-09277-4" target="_blank" rel="noopener">doi:10.1038/s41586-025-09277-4</a></li>
+        <li>Stewart et al. (2026). <i>Global density and biomass of arbuscular mycorrhizal fungal networks.</i> Science. <a href="https://doi.org/10.1126/science.adu4373" target="_blank" rel="noopener">doi:10.1126/science.adu4373</a></li>
+      </ul>
+      <p>Qué muestra cada capa:</p>
+      <ul>
+        <li><b>Riqueza AM / EcM:</b> cantidad de taxones de hongos micorrícicos arbusculares (AM)
+            o ectomicorrícicos (EcM) que el modelo estima cada 100 m² de suelo: unidades taxonómicas virtuales (VT) para los AM y OTU para los EcM.</li>
+        <li><b>Rareza AM / EcM:</b> riqueza ponderada por rareza (RWR, versión «Empirical»). Es
+            más alta donde viven taxones de distribución restringida.</li>
+        <li><b>Incertidumbre AM / EcM:</b> coeficiente de variación de la riqueza estimada, en
+            porcentaje, calculado por los autores sobre 100 versiones del modelo (bootstrap). Indica cuánto
+            varían las predicciones en cada lugar.</li>
+        <li><b>Extrapolación AM / EcM:</b> parte de cada zona donde el modelo predice fuera de las
+            condiciones ambientales representadas en sus muestras de suelo, combinado con la distancia a la
+            muestra más cercana. Lo calculo como 1 menos el valor de la capa «Extrapolation» de SPUN
+            (que mide la cobertura de los datos de entrenamiento), promediado a unos 10 km. El estudio
+            considera extrapolación cuando supera el 5 %.</li>
+        <li><b>Densidad de hifas:</b> metros de filamentos de hongos AM por cm³ de suelo (media
+            del modelo).</li>
+      </ul>
+      <h3>Datos de áreas protegidas (WDPA)</h3>
+      <p>UNEP-WCMC e IUCN (2026), Protected Planet: The World Database on Protected Areas (WDPA)
+         [en línea], noviembre de 2026, Cambridge, Reino Unido: UNEP-WCMC e IUCN. Disponible en
+         <a href="https://www.protectedplanet.net" target="_blank" rel="noopener">www.protectedplanet.net</a>.</p>
+      <p>Uso solo los polígonos con estado designado, establecido, inscripto o adoptado, y dejo
+         afuera las áreas propuestas y las reservas de biósfera de la UNESCO. Los rasterizé a unos
+         4 km por píxel y los muestro solo sobre la tierra firme que cubren los mapas de hongos.
+         Esta web no ofrece descarga de los datos de la WDPA: quien los necesite debe obtenerlos en
+         Protected Planet. Su uso está limitado a fines no comerciales.</p>
+      <p>La capa «Hotspots AM y protección» y el porcentaje de la parada «La brecha en este mapa»
+         son un cálculo mío: tomo el 5 % de la superficie con mayor riqueza estimada de hongos AM
+         (el mismo percentil 95 que usa el estudio; con estos datos el umbral da 39,3 VT, frente a los
+         39,9 VT publicados) y mido qué parte cae dentro de áreas protegidas. Uso la versión
+         «Predicted» del mapa, mientras que el estudio usa la versión de muestreo alto, así que es una
+         aproximación y no reemplaza sus cifras.</p>
+
+      <p>Los colores de cada capa van del percentil 2 al 98 de sus valores, para que unos pocos
+         extremos no aplanen el resto del mapa.</p>
+
+      <h3>Alcance y advertencias</h3>
+      <ul>
+        <li>Este sitio no sirve para identificar hongos ni para decidir si un hongo es comestible.
+            Consumir hongos mal identificados puede ser peligroso.</li>
+        <li>Los mapas predictivos son modelos, no mediciones directas, y tienen zonas de mayor
+            incertidumbre.</li>
+        <li>Este proyecto es independiente y no está afiliado a SPUN ni a las demás organizaciones
+            que cito. Uso sus nombres solo para atribuir las fuentes.</li>
+      </ul>
+
+      <h3>Fuentes consultadas</h3>
+      <ul>
+        <li><a href="https://www.spun.earth/maps" target="_blank" rel="noopener">Underground Atlas, mapa de diversidad micorrícica (SPUN)</a></li>
+        <li><a href="https://doi.org/10.1038/s41586-025-09277-4" target="_blank" rel="noopener">Van Nuland et al. (2025). Global hotspots of mycorrhizal fungal richness are poorly protected. Nature</a></li>
+        <li><a href="https://www.eurekalert.org/news-releases/1091753" target="_blank" rel="noopener">90 % of mycorrhizal fungal biodiversity hotspots lie outside protected areas (EurekAlert, 2025)</a></li>
+        <li><a href="https://www.sciencedaily.com/releases/2023/06/230605181230.htm" target="_blank" rel="noopener">Hawkins et al. (2023). Mycorrhizal mycelium as a global carbon pool. Current Biology (resumen en ScienceDaily)</a></li>
+        <li><a href="https://www.bgci.org/news-events/first-1000-fungi-on-iucn-red-list-reveal-growing-threats/" target="_blank" rel="noopener">First 1,000 fungi on IUCN Red List reveal growing threats (UICN / BGCI, marzo de 2025)</a></li>
+        <li><a href="https://www.protectedplanet.net" target="_blank" rel="noopener">Protected Planet: World Database on Protected Areas (UNEP-WCMC e IUCN)</a></li>
+        <li><a href="https://news.mongabay.com/2025/08/global-maps-reveal-where-mycorrhizal-fungi-thrive-and-where-theyre-unprotected/" target="_blank" rel="noopener">Global maps reveal where mycorrhizal fungi thrive (Mongabay, 2025)</a></li>
+        <li><a href="https://kew.iro.bl.uk/concern/articles/1c9a2c71-07a2-4b93-92a5-40597187a9b0?locale=en" target="_blank" rel="noopener">Pushing the Frontiers of Biodiversity Research: fungi (Niskanen et al., 2023)</a></li>
+        <li><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC7359306" target="_blank" rel="noopener">GlobalFungi, base de datos global de ocurrencias (PMC)</a></li>
+        <li><a href="https://communities.springernature.com/amp/posts/global-atlas-of-fungi-the-globalfungi-database" target="_blank" rel="noopener">Global atlas of fungi: the GlobalFungi Database (Springer Nature Communities)</a></li>
+        <li><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11452162/" target="_blank" rel="noopener">The power of citizen science to advance fungal conservation (PMC)</a></li>
+        <li><a href="https://fundis.org/protocol/choose-a-platform" target="_blank" rel="noopener">FunDiS: elegir plataforma (iNaturalist o Mushroom Observer)</a></li>
+        <li><a href="https://theoryandpractice.citizenscienceassociation.org/articles/717" target="_blank" rel="noopener">State-of-the-Art of iNaturalist as a Source of Data on Ukrainian Fungi (Citizen Science: Theory and Practice)</a></li>
+        <li><a href="https://fungimap.org.au/a-win-for-citizen-science-and-fungimap/" target="_blank" rel="noopener">Fungimap: ciencia ciudadana</a></li>
+        <li><a href="https://uk.news.yahoo.com/world-vast-networks-underground-fungi-050007024.html" target="_blank" rel="noopener">World's vast networks of underground fungi to be mapped for first time (prensa, 2021)</a></li>
+      </ul>
+
+      <h3>Licencia</h3>
+      <p>Publico el código de este proyecto bajo licencia MIT. Los textos y recorridos están bajo
+         licencia <a href="https://creativecommons.org/licenses/by/4.0/deed.es" target="_blank" rel="noopener">Creative
+         Commons Atribución 4.0 Internacional (CC BY 4.0)</a>: podés reutilizarlos citando este sitio.
+         Los datos de SPUN mantienen su licencia CC BY 4.0 y los de la WDPA, los términos de Protected Planet.</p>
+
+      <h3>Créditos técnicos</h3>
+      <ul>
+        <li>Imágenes satelitales: <a href="https://cloudless.eox.at" target="_blank" rel="noopener">EOxCloudless 2020</a>
+            de EOX IT Services GmbH (contiene datos modificados de Copernicus Sentinel 2020), licencia CC BY-NC-SA 4.0
+            para uso no comercial.</li>
+        <li>Áreas protegidas: WDPA de UNEP-WCMC e IUCN, noviembre de 2026.</li>
+        <li>Globo 3D: librería globe.gl. Mapa 2D: librería Leaflet.</li>
+        <li>Imagen de respaldo de la Tierra: textura Blue Marble de la NASA incluida en el paquete
+            three-globe (licencia MIT).</li>
+        <li>Modo noche: <a href="https://earthobservatory.nasa.gov/features/NightLights" target="_blank" rel="noopener">NASA Black Marble 2016</a>
+            (VIIRS), servido por NASA EOSDIS GIBS; dominio público.</li>
+        <li>Cielo estrellado: imagen generada para este proyecto.</li>
+      </ul>
+
+      <h3>Fotos</h3>
+      <p>Las fotos de paisajes de los recorridos vienen de
+         <a href="https://commons.wikimedia.org" target="_blank" rel="noopener">Wikimedia Commons</a>, y las de hongos,
+         de <a href="https://www.inaturalist.org" target="_blank" rel="noopener">iNaturalist</a>. Las cargo en el
+         momento desde esos sitios y muestro siempre el autor y la licencia de cada una. De iNaturalist uso solo
+         observaciones de «grado de investigación», es decir, con la especie confirmada por otras personas de la
+         comunidad, y solo fotos con licencias abiertas (CC0, CC BY, CC BY-SA o CC BY-NC). Es una verificación
+         comunitaria, no una revisión científica formal, y estas fotos no sirven para identificar hongos.</p>
+
+      <h3>Causa</h3>
+      <p>Esta web no recibe dinero. En la sección <a href="#" onclick="abrirApoya();return false;">Apoyá</a> hay enlaces
+         para colaborar directamente con organizaciones que estudian y protegen los hongos y sus ecosistemas.</p>
+
+      <h3>Privacidad</h3>
+      <p>Este sitio no usa cookies, no tiene publicidad, no mide visitas y no guarda datos de quienes lo
+         visitan. Para funcionar, tu navegador pide recursos a servicios externos, que reciben esa consulta
+         (y tu dirección IP) como cualquier visita a sus sitios: unpkg.com (librerías del globo y del mapa),
+         EOX (imágenes satelitales), NASA GIBS (modo noche), iNaturalist (fotos de hongos) y Wikimedia
+         Commons (fotos de paisajes). Cada uno tiene su propia política de privacidad.</p>
+
+      <h3>Contacto</h3>
+      <p>Comentarios, correcciones y propuestas de colaboración:
+         <span id="contactoCorreo">guido.emanuelparra [arroba] gmail.com</span>.</p>
+
+      <p style="margin-top:24px"><button id="cerrarAcerca">Cerrar</button></p>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/globe.gl@2.46.2/dist/globe.gl.min.js" integrity="sha384-1uolMBZ25k3zJcNwCLEv49+L+m2dZudqAzsoSAJfQTzDCSBxJzrMuZ2dkp/5JKiT" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous"></script>
+  <script src="texturas/datos.js"></script>
+  <script>
+    // ---------- AVISO DE ERRORES EN PANTALLA ----------
+    window.addEventListener("error", function (e) {
+      console.error(e.error || e.message);
+      let aviso = document.getElementById("avisoError");
+      if (!aviso) {
+        aviso = document.createElement("div");
+        aviso.id = "avisoError";
+        aviso.style.cssText = "position:fixed;left:50%;top:70px;transform:translateX(-50%);z-index:4000;background:#2a1a10;" +
+          "border:1px solid #ffb300;color:#ffcf66;padding:8px 14px;border-radius:6px;font:13px system-ui;max-width:90vw";
+        document.body.appendChild(aviso);
+      }
+      aviso.textContent = "Algo no funcionó como esperaba. Probá recargar la página.";
+      setTimeout(() => aviso.remove(), 7000);
+    });
+    (function () {
+      const c = document.createElement("canvas");
+      const ok = !!(window.WebGLRenderingContext && (c.getContext("webgl2") || c.getContext("webgl")));
+      if (!ok) document.addEventListener("DOMContentLoaded", () => {
+        document.body.insertAdjacentHTML("afterbegin", "<div style='position:fixed;inset:0;z-index:5000;background:#0b0f14;color:#e8eef5;" +
+          "display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;font:16px system-ui'>" +
+          "Tu navegador no tiene activado WebGL, que esta web necesita para dibujar el globo 3D.<br>Probá con una versión actual de Chrome, Firefox, Edge o Safari.</div>");
+      });
+    })();
+
+    // ---------- RECORRIDOS NARRADOS ----------
+    // Las cifras provienen de las fuentes indicadas en cada parada.
+    // La posición de la cámara (lat, lng, alt) es solo para la visualización.
+    const recorridos = [
+      {
+        nombre: "El internet de la vida",
+        descripcion: "Qué son los hongos micorrícicos y por qué importa protegerlos.",
+        paradas: [
+          {
+            titulo: "El reino Fungi",
+            texto: "Se estima que existen entre 2 y 3 millones de especies de hongos, con una mejor estimación de 2,5 millones. Solo unas 155.000 tienen nombre científico: más del 90 % sigue sin describir.",
+            fuente: "Niskanen et al., 2023, Annual Review of Environment and Resources; informe State of the World's Plants and Fungi (Kew, 2023)",
+            lat: 20, lng: 0, alt: 2.5
+          },
+          {
+            titulo: "Una asociación con las plantas",
+            texto: "Los hongos micorrícicos se asocian con más del 80 % de las especies de plantas. Sus redes de filamentos bajo el suelo transportan nutrientes y agua.",
+            fuente: "Van Nuland et al., 2025, Nature (vía Mongabay)",
+            lat: 10, lng: -40, alt: 2.2
+          },
+          {
+            titulo: "Carbono en el suelo",
+            texto: "Se estima que las plantas transfieren a los hongos micorrícicos unos 13.000 millones de toneladas de CO₂ por año, alrededor del 36 % de las emisiones anuales de combustibles fósiles. Es un flujo de carbono hacia el suelo: cuánto queda almacenado a largo plazo todavía se investiga.",
+            fuente: "Hawkins et al., 2023, Current Biology",
+            lat: 30, lng: 20, alt: 2.4, capa: "hifas"
+          },
+          {
+            titulo: "Diversidad ecuatorial",
+            texto: "Los hongos micorrícicos arbusculares alcanzan su mayor diversidad cerca del ecuador. Los ectomicorrícicos muestran el patrón opuesto: son más diversos en latitudes altas del norte y en el sur de Sudamérica y Australia.",
+            fuente: "Van Nuland et al., 2025, Nature (vía Mongabay)",
+            lat: 0, lng: 20, alt: 1.9, capa: "am_riqueza"
+          },
+          {
+            titulo: "La brecha de protección",
+            texto: "Solo el 9,5 % de los puntos calientes de diversidad micorrícica está dentro de áreas protegidas. En Asia apenas el 2,2 % de los puntos calientes de riqueza de hongos arbusculares está protegido; en Europa, el 19,6 %, la tasa más alta para ese grupo.",
+            fuente: "Van Nuland et al., 2025, Nature (vía EurekAlert y Mongabay)",
+            lat: 25, lng: 80, alt: 2.0, capa: "brecha_am"
+          },
+          {
+            titulo: "La brecha en este mapa",
+            texto: "Si tomamos el 5 % de la tierra con mayor riqueza estimada de hongos arbusculares (en rojo y verde), el mismo criterio de hotspot que usa el estudio, solo alrededor del 6 % de esa superficie queda dentro de áreas protegidas, frente a cerca del 16 % del total de tierra que cubren los mapas. Es un cálculo propio y aproximado, a unos 4 km de resolución.",
+            fuente: "Cálculo propio con datos de SPUN y la WDPA (UNEP-WCMC e IUCN, noviembre de 2026)",
+            lat: -10, lng: -55, alt: 1.9, capa: "brecha_am"
+          },
+          {
+            titulo: "Patagonia, zona de muestreo",
+            texto: "Al lanzar su proyecto de mapeo en 2021, SPUN anunció que sus primeras colectas de suelo se harían en la Patagonia. El recorrido «Hongos de Argentina» muestra qué estiman hoy los mapas en esa región.",
+            fuente: "Anuncio de SPUN (2021), según la prensa de la época",
+            lat: -45, lng: -71, alt: 1.6
+          },
+          {
+            titulo: "Lo que falta conocer",
+            texto: "En marzo de 2025 la Lista Roja de la UICN incluía 1.300 especies de hongos, y al menos 411 estaban amenazadas. Es una fracción mínima de las especies existentes: documentar dónde viven es un paso previo para evaluarlas y protegerlas.",
+            fuente: "UICN, actualización de la Lista Roja (marzo de 2025)",
+            lat: 20, lng: 0, alt: 2.5
+          }
+        ]
+      },
+      {
+        nombre: "Cómo se conoce el reino Fungi",
+        descripcion: "De dónde salen los datos: ADN, ciencia ciudadana y modelos.",
+        paradas: [
+          {
+            titulo: "Secuencias de ADN",
+            texto: "El mapa predictivo de hongos micorrícicos de SPUN se construyó con 2.800 millones de secuencias de ADN fúngico, obtenidas de casi 25.000 muestras de suelo en 130 países. Los datos provienen de GlobalFungi, GlobalAMFungi y el consorcio Global Soil Mycobiome.",
+            fuente: "SPUN, Underground Atlas",
+            lat: 20, lng: 0, alt: 2.5
+          },
+          {
+            titulo: "Una base de datos abierta",
+            texto: "GlobalFungi reúne registros de hongos obtenidos por secuenciación de ADN en estudios publicados, con acceso abierto bajo principios FAIR. Permite buscar por género o especie y seleccionar muestras en un mapa para analizar la flora fúngica de una zona.",
+            fuente: "GlobalFungi (PMC; Springer Nature Communities)",
+            lat: 35, lng: 15, alt: 2.4
+          },
+          {
+            titulo: "Aportes de la ciudadanía",
+            texto: "Aficionados y especialistas documentan hongos con fotografías georreferenciadas y las publican en iNaturalist o Mushroom Observer. Programas como FunDiS, en Estados Unidos, recomiendan publicarlas en esas plataformas, donde otras personas de la comunidad ayudan a verificar las identificaciones.",
+            fuente: "FunDiS; Citizen Science: Theory and Practice",
+            lat: 40, lng: -100, alt: 2.4
+          },
+          {
+            titulo: "El peso de cada plataforma",
+            texto: "La cobertura varía según el país y la plataforma. En Ucrania, un estudio de 2024 contó más de 69.000 observaciones de hongos publicadas en iNaturalist en apenas cinco años, una fuente de datos que antes no existía.",
+            fuente: "Citizen Science: Theory and Practice (2024)",
+            lat: 49, lng: 32, alt: 1.6
+          },
+          {
+            titulo: "Fungimap, en Australia",
+            texto: "Fungimap recopiló más de 200.000 registros aportados por ciudadanos. En 2019, esos datos se usaron en un taller de la Global Fungal Red List Initiative para evaluar el riesgo de 19 especies de hongos australianas.",
+            fuente: "Fungimap",
+            lat: -25, lng: 134, alt: 1.8
+          },
+          {
+            titulo: "La Lista Roja",
+            texto: "Las evaluaciones de hongos en la Lista Roja de la UICN pasaron de 2 en 2003 a 625 en junio de 2023, y a 1.300 en marzo de 2025: un número aún pequeño frente a otros organismos. Los registros ciudadanos aportan datos de presencia, pero no son lo único que se necesita para evaluar una especie.",
+            fuente: "«The power of citizen science to advance fungal conservation» (PMC); UICN (2025); Fungimap",
+            lat: 20, lng: 0, alt: 2.5
+          },
+          {
+            titulo: "Los límites de los modelos",
+            texto: "En el Underground Atlas, cada píxel de 1 km de lado es una predicción del modelo y no una medición directa. En naranja se ven las zonas donde el modelo extrapola, fuera de las condiciones de sus muestras, como el Sahel. Interpretar estos datos exige considerar dónde hay pocas muestras.",
+            fuente: "SPUN, Underground Atlas",
+            lat: 25, lng: 20, alt: 2.2, capa: "am_extrap"
+          }
+        ]
+      },
+      {
+        nombre: "Hongos de Argentina",
+        descripcion: "De las Yungas a Tierra del Fuego, con los valores que estiman los mapas.",
+        paradas: [
+          {
+            titulo: "Argentina bajo tierra",
+            texto: "Este recorrido usa los valores que estiman los mapas de SPUN en cada parada: son los mismos que ves en la ficha si tocás ese punto (celdas de unos 39 km). Para dar contexto, los comparo con la superficie de tierra firme que cubren los mapas: «más que en el 80 %» significa que solo el 20 % de esa superficie tiene un valor mayor.",
+            fuente: "Cálculo propio con mapas de SPUN",
+            lat: -38, lng: -64, alt: 1.4, capa: "am_riqueza", foto: "File:ISS-50 Argentina and the Southern Andes.jpg"
+          },
+          {
+            titulo: "Yungas",
+            texto: "En las selvas de montaña de Jujuy, cerca del Parque Nacional Calilegua, el modelo estima unos 33 taxones de hongos arbusculares cada 100 m², más que en el 85 % de la tierra. La rareza también es alta: supera al 89 % de la superficie del mapa.",
+            fuente: "Cálculo propio con mapas de SPUN",
+            lat: -23.7, lng: -64.8, alt: 0.6, capa: "am_riqueza", foto: "File:Calilegua, yungas.jpg", hongos: 40
+          },
+          {
+            titulo: "Puna: un dato para tomar con cautela",
+            texto: "En la Puna el mapa muestra mucha densidad de hifas, más que en el 90 % de la tierra. Pero acá el modelo de hongos arbusculares extrapola más que en el 95 % del mapa y su incertidumbre también es alta: hay pocas muestras de suelo en condiciones parecidas.",
+            fuente: "Cálculo propio con mapas de SPUN",
+            lat: -23.5, lng: -66.8, alt: 0.6, capa: "am_extrap", foto: "File:Paisaje del desierto de La Puna - panoramio.jpg", hongos: 80
+          },
+          {
+            titulo: "Chaco seco",
+            texto: "En el punto de esta parada, en el Chaco seco, el modelo estima una riqueza de hongos arbusculares cercana a la mediana mundial: unos 19 taxones cada 100 m², frente a unos 20. La zona no tiene áreas protegidas registradas en la WDPA.",
+            fuente: "Cálculo propio con mapas de SPUN y la WDPA (noviembre de 2026)",
+            lat: -24.5, lng: -62.5, alt: 0.7, capa: "wdpa", foto: "File:Bosque Chaqueño.jpg", hongos: 80
+          },
+          {
+            titulo: "Esteros del Iberá",
+            texto: "Casi toda esta zona de Corrientes está dentro de áreas protegidas. El modelo estima unos 24 taxones de hongos arbusculares cada 100 m², más que en el 63 % de la tierra.",
+            fuente: "Cálculo propio con mapas de SPUN y la WDPA (noviembre de 2026)",
+            lat: -28.4, lng: -57.1, alt: 0.7, capa: "wdpa", foto: "File:Flying Over Esteros del Iberá The kingdom of water, North-eastern Argentina.jpg", hongos: 50
+          },
+          {
+            titulo: "Pampa húmeda",
+            texto: "La Pampa tiene una riqueza alta de hongos arbusculares (unos 30 taxones cada 100 m², más que en el 78 % de la tierra). En cambio, para los ectomicorrícicos la incertidumbre del modelo está entre las más altas del mundo, por encima del 98 % del mapa. En el punto de esta parada no hay áreas protegidas.",
+            fuente: "Cálculo propio con mapas de SPUN y la WDPA (noviembre de 2026)",
+            lat: -35.5, lng: -61, alt: 0.8, capa: "ecm_cv", foto: "File:Pastizal de la Pampa Inundable.jpg", hongos: 80
+          },
+          {
+            titulo: "Bosques andino-patagónicos",
+            texto: "Cerca de Bariloche, en el Parque Nacional Nahuel Huapi, el modelo estima unos 53 taxones de hongos ectomicorrícicos cada 100 m², más que en el 95 % de la tierra. Es parte del patrón del sur de Sudamérica, donde estos hongos son especialmente diversos. Alrededor del 90 % de esta zona está protegida.",
+            fuente: "Cálculo propio con mapas de SPUN y la WDPA; Van Nuland et al., 2025",
+            lat: -41.1, lng: -71.4, alt: 0.6, capa: "ecm_riqueza", foto: "File:Llao Llao Peninsula.jpg", hongos: 30
+          },
+          {
+            titulo: "Tierra del Fuego",
+            texto: "En el sur de la isla, la densidad de hifas estimada es de unos 6,2 metros por cm³ de suelo, más que en el 98 % de la tierra, y la riqueza ectomicorrícica sigue siendo alta. Solo alrededor del 11 % de esta zona está dentro de áreas protegidas.",
+            fuente: "Cálculo propio con mapas de SPUN y la WDPA (noviembre de 2026)",
+            lat: -54.6, lng: -67.8, alt: 0.6, capa: "hifas", foto: "File:TDFNPLengaForest.jpg", hongos: 40
+          }
+        ]
+      }
+    ];
+    let tourActual = 0; // recorrido en curso
+    let paso = -1;      // parada en curso; -1 = ninguna
+
+    // ---------- IMÁGENES ----------
+    const IMAGEN_TIERRA = "https://unpkg.com/three-globe@2.45.6/example/img/earth-blue-marble.jpg";
+    const IMAGEN_CIELO = "texturas/cielo.webp"; // generada para este proyecto
+    const LIMITES = [[-90, -180], [90, 180]];
+
+    // ---------- CAPAS DE SPUN ----------
+    // window.CAPAS viene de texturas/datos.js: nombre, textura, rango, colores y una
+    // grilla de valores (1024 x 512) para mostrar el dato del punto que se toca.
+    const CAPAS = window.CAPAS || [];
+    const capaPorId = {};
+    CAPAS.forEach(c => { capaPorId[c.id] = c; });
+    let capa = "am_riqueza"; // capa que se está mostrando ("" = ninguna)
+    const OPACIDAD = 0.85;
+    let modoNoche = false;
+    // La portada se muestra al entrar, salvo que el enlace pida ir directo al globo (?explorar)
+    let enPortada = !/[?&#](explorar|sin-portada)/.test(location.href);
+    function opacidadBase() { return enPortada ? 1 : (modoNoche ? 0.6 : OPACIDAD); }
+    const esArchivoLocal = location.protocol === "file:";
+
+    // Llena el selector de capas
+    const sel = document.getElementById("selCapa");
+    const gruposSel = {};
+    CAPAS.forEach(c => {
+      const g = c.grupo || "Otras";
+      if (!gruposSel[g]) {
+        gruposSel[g] = document.createElement("optgroup");
+        gruposSel[g].label = g;
+        sel.appendChild(gruposSel[g]);
+      }
+      const o = document.createElement("option");
+      o.value = c.id; o.textContent = c.nombre;
+      gruposSel[g].appendChild(o);
+    });
+    sel.value = capa;
+
+    // Descomprime las grillas de valores (base64 + zlib)
+    async function decodificarGrilla(b64) {
+      const bytes = Uint8Array.from(atob(b64), ch => ch.charCodeAt(0));
+      const flujo = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate"));
+      return new Uint8Array(await new Response(flujo).arrayBuffer());
+    }
+    const grillasListas = Promise.all(CAPAS.filter(c => c.grilla).map(async c => { c.valores = await decodificarGrilla(c.grilla); }))
+      .catch(err => console.warn("No se pudieron leer las grillas:", err));
+
+    // Valor del modelo en una latitud/longitud (null si no hay dato, por ejemplo en el mar)
+    function valorEn(c, lat, lng) {
+      if (!c.valores) return null;
+      lng = ((lng + 180) % 360 + 360) % 360 - 180;
+      const col = Math.min(window.GRILLA_ANCHO - 1, Math.floor((lng + 180) / 360 * window.GRILLA_ANCHO));
+      const fila = Math.min(window.GRILLA_ALTO - 1, Math.max(0, Math.floor((90 - lat) / 180 * window.GRILLA_ALTO)));
+      const q = c.valores[fila * window.GRILLA_ANCHO + col];
+      if (q === 255) return null;
+      return c.min + q / 254 * (c.max - c.min);
+    }
+    function formato(v) {
+      const decimales = v < 1 ? 3 : (v < 10 ? 2 : 1);
+      return v.toLocaleString("es-AR", { maximumFractionDigits: decimales, minimumFractionDigits: decimales });
+    }
+
+    // ---------- LEYENDA ----------
+    function dibujarLeyenda() {
+      const caja = document.getElementById("leyenda");
+      const c = capaPorId[capa];
+      if (!c) { caja.style.display = "none"; return; }
+      caja.style.display = "block";
+      let escala;
+      if (c.tipo === "categorias") {
+        escala = c.categorias.map(k => "<div class='categoria'><span class='muestra' style='background:" + k[0] +
+          "'></span>" + k[1] + "</div>").join("");
+      } else if (c.tipo === "porcentaje") {
+        escala = "<div class='barra-color' style='background:linear-gradient(to right," + c.colores.join(",") + ")'></div>" +
+          "<div class='extremos'><span>" + (c.extremos ? c.extremos[0] : "poca") + "</span><span>" + c.unidad +
+          "</span><span>" + (c.extremos ? c.extremos[1] : "toda") + "</span></div>";
+      } else {
+        escala = "<div class='barra-color' style='background:linear-gradient(to right," + c.colores.join(",") + ")'></div>" +
+          "<div class='extremos'><span>≤ " + formato(c.leyendaMin) + "</span><span>" + c.unidad +
+          "</span><span>≥ " + formato(c.leyendaMax) + "</span></div>";
+      }
+      const spun = "<a href='https://www.spun.earth' target='_blank' rel='noopener'>SPUN</a> " +
+        "(<a href='https://creativecommons.org/licenses/by/4.0/deed.es' target='_blank' rel='noopener'>CC BY 4.0</a>)";
+      const wdpa = "UNEP-WCMC e IUCN (2026), <a href='https://www.protectedplanet.net' target='_blank' rel='noopener'>Protected Planet</a>, WDPA de noviembre de 2026";
+      const credito = c.credito === "wdpa" ? wdpa : (c.credito === "ambos" ? spun + " y " + wdpa : spun);
+      caja.innerHTML =
+        "<div class='titulo'>" + c.nombre + "</div>" +
+        "<div class='desc'>" + c.descripcion + "</div>" + escala +
+        "<div class='credito'>Datos: " + credito +
+        (esArchivoLocal ? "<br><span style='color:#ffb300'>Para ver la capa en el globo 3D abrí la web con abrir_web.bat</span>" : "") +
+        "</div>";
+    }
+
+    // ---------- FICHA ----------
+    let ultimoPunto = null;
+    let fichaPlegada = false;
+    document.getElementById("ficha").addEventListener("click", e => {
+      if (e.target.id !== "plegarFicha") return;
+      fichaPlegada = !fichaPlegada;
+      document.getElementById("ficha").classList.toggle("plegada", fichaPlegada);
+      e.target.textContent = fichaPlegada ? "+" : "−";
+    });
+    function mostrarFicha(lat, lng) {
+      ultimoPunto = [lat, lng];
+      lng = ((lng + 180) % 360 + 360) % 360 - 180;
+      const ns = lat >= 0 ? "N" : "S", eo = lng >= 0 ? "E" : "O";
+      let html = "<h3><span>Este punto</span><button id='plegarFicha' aria-label='Plegar o desplegar la ficha' title='Plegar o desplegar'>" +
+        (fichaPlegada ? "+" : "−") + "</button></h3><div class='cuerpo'><div class='coords'>" +
+        Math.abs(lat).toFixed(2) + "° " + ns + ", " + Math.abs(lng).toFixed(2) + "° " + eo + "</div>";
+      let hayDatos = false;
+      let grupoActual = null;
+      CAPAS.filter(c => c.enFicha !== false).forEach(c => {
+        if (c.grupo !== grupoActual) {
+          grupoActual = c.grupo;
+          html += "<div class='grupo-ficha'>" + c.grupo + "</div>";
+        }
+        const v = valorEn(c, lat, lng);
+        if (v !== null && c.grupo === "Hongos micorrícicos") hayDatos = true;
+        let texto;
+        if (v === null) texto = "sin dato";
+        else if (c.tipo === "porcentaje") texto = Math.round(v * 100) + " % de la zona";
+        else texto = formato(v) + (c.sufijo || "");
+        html += "<div class='fila" + (c.id === capa ? " actual" : "") + "'><span>" + c.nombre + "</span><span>" +
+          texto + "</span></div>";
+      });
+      html += "<div class='pie'>" + (hayDatos
+        ? "Valores estimados por el modelo de SPUN y protección según la WDPA, promediados en celdas de unos 39 km. Donde la incertidumbre o la extrapolación son altas, conviene tomar los valores con cautela."
+        : "Sin datos: los mapas cubren solo la tierra firme sin hielo.") + "</div></div>";
+      if (hayDatos) html = html.replace(/<\/div><\/div>$/, "</div><div class='hongos' id='hongosFicha'></div></div>");
+      document.getElementById("ficha").innerHTML = html;
+      marcarPunto(lat, lng);
+      if (hayDatos) pintarHongos("hongosFicha", lat, lng, 25, nuevoToken("hongosFicha"));
+    }
+
+    // ---------- FOTOS: Wikimedia Commons (paisajes) e iNaturalist (hongos) ----------
+    function escaparHTML(t) {
+      return String(t == null ? "" : t).replace(/[&<>"']/g, ch =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+    }
+    const cacheCommons = {};
+    // Trae la foto, el autor y la licencia de un archivo de Wikimedia Commons
+    function fotoCommons(archivo) {
+      if (!cacheCommons[archivo]) {
+        const url = "https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*" +
+          "&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=800" +
+          "&iiextmetadatafilter=LicenseShortName|Artist&titles=" + encodeURIComponent(archivo);
+        cacheCommons[archivo] = fetch(url).then(r => r.json()).then(j => {
+          const p = Object.values(j.query.pages)[0];
+          const ii = p.imageinfo[0], m = ii.extmetadata || {};
+          const tmp = document.createElement("div");
+          tmp.innerHTML = (m.Artist && m.Artist.value) || "autor no indicado";
+          return { src: ii.thumburl || ii.url, pagina: ii.descriptionurl,
+                   autor: tmp.textContent.trim().slice(0, 80),
+                   licencia: (m.LicenseShortName && m.LicenseShortName.value) || "ver licencia" };
+        });
+      }
+      return cacheCommons[archivo];
+    }
+
+    const LICENCIAS_INAT = { "cc0": "CC0", "cc-by": "CC BY", "cc-by-sa": "CC BY-SA", "cc-by-nc": "CC BY-NC" };
+    // Enlace a la licencia a partir de su nombre corto ("CC BY-SA 3.0", "CC BY-NC", "CC0"...)
+    function enlaceLicencia(nombre) {
+      const n = String(nombre || "");
+      let url = null;
+      if (/^CC0/i.test(n)) url = "https://creativecommons.org/publicdomain/zero/1.0/deed.es";
+      else {
+        const m = n.match(/CC BY((?:-NC)?(?:-SA)?(?:-ND)?)(?:\s+(\d\.\d))?/i);
+        if (m) url = "https://creativecommons.org/licenses/by" + m[1].toLowerCase() + "/" + (m[2] || "4.0") + "/deed.es";
+      }
+      return url ? "<a href='" + url + "' target='_blank' rel='noopener license'>" + escaparHTML(n) + "</a>" : escaparHTML(n);
+    }
+    const cacheINat = {};
+    // Hongos observados cerca de un punto, con identificación verificada por la comunidad
+    // ("grado de investigación") y fotos con licencia abierta. Una especie por tarjeta.
+    function hongosCerca(lat, lng, radioKm) {
+      const clave = lat.toFixed(2) + "," + lng.toFixed(2) + "," + radioKm;
+      if (!cacheINat[clave]) {
+        const url = "https://api.inaturalist.org/v1/observations?taxon_id=47170&quality_grade=research" +
+          "&photos=true&photo_license=" + Object.keys(LICENCIAS_INAT).join(",") +
+          "&order_by=votes&per_page=40&locale=es&lat=" + lat.toFixed(4) + "&lng=" + lng.toFixed(4) + "&radius=" + radioKm;
+        cacheINat[clave] = fetch(url).then(r => r.json()).then(j => {
+          const vistas = new Set(), lista = [];
+          for (const o of j.results || []) {
+            const ft = (o.photos || []).find(f => LICENCIAS_INAT[f.license_code]);
+            if (!o.taxon || !ft || vistas.has(o.taxon.id)) continue;
+            vistas.add(o.taxon.id);
+            lista.push({
+              cientifico: o.taxon.name, comun: o.taxon.preferred_common_name || "",
+              foto: ft.url.replace("/square.", "/medium."),
+              autor: (o.user && (o.user.name || o.user.login)) || "usuario de iNaturalist",
+              licencia: LICENCIAS_INAT[ft.license_code], enlace: o.uri,
+              lugar: o.place_guess || ""
+            });
+            if (lista.length === 6) break;
+          }
+          return { lista, total: j.total_results || 0 };
+        });
+      }
+      return cacheINat[clave];
+    }
+
+    // Dibuja la grilla de hongos dentro del elemento indicado
+    function pintarHongos(idCaja, lat, lng, radioKm, token) {
+      const caja = document.getElementById(idCaja);
+      if (!caja) return;
+      caja.innerHTML = "<div class='tit'>Hongos observados cerca</div><div class='aviso'>Buscando observaciones…</div>";
+      hongosCerca(lat, lng, radioKm).then(({ lista, total }) => {
+        if (token !== tokensFotos[idCaja]) return; // el usuario ya se movió a otro punto
+        const c = document.getElementById(idCaja);
+        if (!c) return;
+        if (!lista.length) {
+          c.innerHTML = "<div class='tit'>Hongos observados cerca</div><div class='aviso'>No hay observaciones verificadas con foto de libre uso en " +
+            radioKm + " km a la redonda.</div>";
+          return;
+        }
+        c.innerHTML = "<div class='tit'>Hongos observados cerca</div><div class='grilla'>" +
+          lista.map(h => "<figure><a href='" + escaparHTML(h.enlace) + "' target='_blank' rel='noopener' title='" +
+            escaparHTML(h.lugar) + "'><img loading='lazy' src='" + escaparHTML(h.foto) + "' alt='" +
+            escaparHTML(h.comun || h.cientifico) + "'></a><figcaption><span class='sp'>" +
+            (h.comun ? escaparHTML(h.comun) + "<br>" : "") + "<i>" + escaparHTML(h.cientifico) + "</i></span>" +
+            "<span class='au'>© " + escaparHTML(h.autor) + " · " + enlaceLicencia(h.licencia) + "</span></figcaption></figure>").join("") +
+          "</div><div class='aviso'>Observaciones de <a href='https://www.inaturalist.org' target='_blank' rel='noopener'>iNaturalist</a> " +
+          "en un radio de " + radioKm + " km, con la especie confirmada por la comunidad (" + total + " en total). " +
+          "No sirven para identificar hongos ni para saber si son comestibles.</div>";
+      }).catch(() => {
+        const c = document.getElementById(idCaja);
+        if (c && token === tokensFotos[idCaja]) c.innerHTML = "<div class='tit'>Hongos observados cerca</div><div class='aviso'>No se pudieron cargar las observaciones de iNaturalist.</div>";
+      });
+    }
+
+    function pintarFotoLugar(idCaja, archivo, token) {
+      fotoCommons(archivo).then(f => {
+        const c = document.getElementById(idCaja);
+        if (!c || token !== tokensFotos[idCaja]) return;
+        c.innerHTML = "<img src='" + escaparHTML(f.src) + "' alt=''><div class='credito-foto'>Foto: " + escaparHTML(f.autor) +
+          " · " + enlaceLicencia(f.licencia) + " · <a href='" + escaparHTML(f.pagina) + "' target='_blank' rel='noopener'>Wikimedia Commons</a></div>";
+      }).catch(() => {
+        const c = document.getElementById(idCaja);
+        if (c) c.style.display = "none";
+      });
+    }
+    const tokensFotos = {};
+    function nuevoToken(idCaja) { tokensFotos[idCaja] = (tokensFotos[idCaja] || 0) + 1; return tokensFotos[idCaja]; }
+
+    // ---------- GLOBO 3D ----------
+    // Fondo satelital en mosaicos: el globo pide más detalle a medida que te acercás.
+    const MOSAICO_GLOBO = (x, y, nivel) =>
+      "https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2020_3857/default/g/" + nivel + "/" + y + "/" + x + ".jpg";
+    const CREDITO_SATELITE = "Imágenes satelitales: <a href='https://cloudless.eox.at' target='_blank' rel='noopener'>EOxCloudless 2020</a> " +
+      "de EOX IT Services GmbH (contiene datos modificados de Copernicus Sentinel 2020), CC BY-NC-SA 4.0";
+
+    const globo = Globe()(document.getElementById("globo"))
+      .globeTileEngineUrl(MOSAICO_GLOBO)
+      .globeTileEngineMaxLevel(14)
+      .backgroundImageUrl(IMAGEN_CIELO)
+      .atmosphereColor("#4fc3f7")
+      .atmosphereAltitude(0.2)
+      .width(window.innerWidth)
+      .height(window.innerHeight - 56)
+      .ringColor(d => d.color)
+      .ringMaxRadius(d => d.radio)
+      .ringPropagationSpeed(d => d.velocidad)
+      .ringRepeatPeriod(d => d.periodo)
+      .onGlobeClick(({ lat, lng }) => mostrarFicha(lat, lng))
+      .onHexClick((h, ev, { lat, lng }) => mostrarFicha(lat, lng))
+      .hexBinPointLat("lat").hexBinPointLng("lng").hexBinPointWeight("n")
+      .hexBinResolution(2)
+      .hexMargin(0.12)
+      .hexTransitionDuration(1400);
+
+    globo.controls().autoRotate = true;
+    globo.controls().autoRotateSpeed = 0.6;
+    globo.controls().addEventListener("start", () => {
+      globo.controls().autoRotate = false;
+    });
+    // Al acercarse, la capa se vuelve más transparente para dejar ver el detalle satelital
+    globo.controls().addEventListener("change", () => {
+      if (!esferaCapa) return;
+      const alt = globo.pointOfView().altitude;
+      ajustarOpacidadGlobo();
+    });
+    // Entrada: la cámara llega desde lejos (la portada luego la hace derivar lentamente)
+    globo.pointOfView({ lat: 5, lng: -40, altitude: 7 }, 0);
+    setTimeout(() => globo.pointOfView(enPortada ? { lat: -12, lng: -58, altitude: 0.95 } : { lat: 5, lng: -25, altitude: 2.5 }, 3200), 400);
+
+    // La capa de datos va en una segunda esfera transparente, apenas por encima
+    // del fondo satelital. Reutiliza la esfera interna de globe.gl (que queda oculta
+    // cuando se usan mosaicos) y su material, donde globeImageUrl carga la textura.
+    let esferaCapa = null;
+    function prepararEsferaCapa() {
+      if (esferaCapa) return esferaCapa;
+      let base = null;
+      globo.scene().traverse(o => {
+        if (!base && o.__globeObjType === "globe") base = o.children.find(h => h.isMesh);
+      });
+      if (!base) return null;
+      const m = base.material;
+      m.transparent = true;
+      m.opacity = opacidadBase();
+      m.shininess = 0;
+      if (m.specular) m.specular.setRGB(0, 0, 0);
+      esferaCapa = base.clone();
+      esferaCapa.scale.setScalar(1.0015);
+      esferaCapa.renderOrder = 1;
+      esferaCapa.visible = false;
+      base.parent.add(esferaCapa);
+      return esferaCapa;
+    }
+
+    let texturaPedida = null;
+    function pintarGlobo() {
+      const esfera = prepararEsferaCapa();
+      if (!esfera) { setTimeout(pintarGlobo, 200); return; }
+      if (enPortada) {
+        globo.atmosphereColor("#ffb300");
+        globo.ringsData([]);
+        globo.hexBinPointsData([]);
+        mostrarTexturaGlobo(esfera, TEXTURA_PORTADA, () => enPortada);
+        return;
+      }
+      const c = capaPorId[capa];
+      const color = c ? (c.colores ? c.colores[c.colores.length - 2] : c.categorias[0][0]) : "#4fc3f7";
+      globo.atmosphereColor(modoNoche ? "#7b6cff" : (color.startsWith("#") ? color : "#4fc3f7"));
+      actualizarDestellos();
+      if (!c || esArchivoLocal || (vista3D && c.valores)) { esfera.visible = false; actualizarColumnas(); return; }
+      actualizarColumnas();
+      mostrarTexturaGlobo(esfera, c.textura, () => !enPortada && !(vista3D && c.valores) && capaPorId[capa] === c);
+    }
+    const TEXTURA_PORTADA = "texturas/portada.webp";
+    function mostrarTexturaGlobo(esfera, url, sigueVigente) {
+      const esperado = new URL(url, location.href).href;
+      esfera.material.opacity = opacidadBase();
+      if (texturaPedida !== esperado) {
+        texturaPedida = esperado;
+        esfera.visible = false;
+        globo.globeImageUrl(url);
+      }
+      // Se muestra cuando la textura nueva terminó de cargar
+      (function chequear() {
+        if (texturaPedida !== esperado || !sigueVigente()) return;
+        const img = esfera.material.map && esfera.material.map.image;
+        if (img && img.src === esperado) esfera.visible = true;
+        else setTimeout(chequear, 120);
+      })();
+    }
+
+    function ajustarOpacidadGlobo() {
+      if (!esferaCapa) return;
+      const alt = globo.pointOfView().altitude, base = opacidadBase();
+      esferaCapa.material.opacity = alt < 0.25 ? Math.min(base, 0.45) : alt < 0.7 ? Math.min(base, 0.65) : base;
+    }
+
+    // ---------- MODO NOCHE: luces de las ciudades (NASA Black Marble) ----------
+    const MOSAICO_NOCHE = (x, y, nivel) =>
+      "https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_Black_Marble/default/2016-01-01/GoogleMapsCompatible_Level8/" +
+      nivel + "/" + y + "/" + x + ".png";
+    const CREDITO_NOCHE = "Luces nocturnas: <a href='https://earthobservatory.nasa.gov/features/NightLights' target='_blank' rel='noopener'>NASA Black Marble 2016</a> " +
+      "(VIIRS, vía NASA EOSDIS GIBS), dominio público";
+    function aplicarModoNoche() {
+      globo.globeTileEngineUrl(modoNoche ? MOSAICO_NOCHE : MOSAICO_GLOBO)
+           .globeTileEngineMaxLevel(modoNoche ? 8 : 14);
+      if (globo.globeTileEngineClearCache) globo.globeTileEngineClearCache();
+      if (modoNoche) fondoNoche2D.addTo(mapa); else mapa.removeLayer(fondoNoche2D);
+      if (esferaCapa) esferaCapa.material.opacity = opacidadBase();
+      ajustarOpacidadGlobo();
+      if (capaMapa) capaMapa.setOpacity(opacidadBase());
+      if (overlayB) overlayB.setOpacity(opacidadBase());
+      escribirCreditoSat();
+      pintarGlobo();
+    }
+    function escribirCreditoSat() {
+      const corto = window.innerWidth <= 700;
+      document.getElementById("creditoSat").innerHTML = modoNoche
+        ? (corto ? "Luces: <a href='https://earthobservatory.nasa.gov/features/NightLights' target='_blank' rel='noopener'>NASA Black Marble 2016</a> · dominio público" : CREDITO_NOCHE)
+        : (corto ? "Satélite: <a href='https://cloudless.eox.at' target='_blank' rel='noopener'>EOxCloudless 2020</a> · EOX · Copernicus Sentinel 2020 · CC BY-NC-SA 4.0" : CREDITO_SATELITE);
+    }
+
+    // ---------- CIELO EN MOVIMIENTO ----------
+    // Rota lentamente la esfera de estrellas y suma una segunda capa que titila.
+    const sinMovimiento = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let cielo = null, cielo2 = null, tAnterior = performance.now();
+    function animarCielo(t) {
+      const dt = Math.min(100, t - tAnterior); tAnterior = t;
+      if (!cielo) {
+        cielo = globo.scene().children.find(o => o.isMesh && o.material && o.material.map && o.material.side === 1);
+        if (cielo) {
+          cielo2 = cielo.clone();
+          cielo2.material = cielo.material.clone();
+          cielo2.material.transparent = true;
+          cielo2.material.blending = 2;      // aditivo: suma brillo
+          cielo2.material.depthWrite = false;
+          cielo2.scale.setScalar(0.96);
+          cielo2.rotation.set(0.6, 1.7, 0.3);
+          globo.scene().add(cielo2);
+        }
+      }
+      if (cielo && !sinMovimiento) {
+        cielo.rotation.y += dt * 0.000012;
+        cielo.rotation.x = Math.sin(t * 0.00002) * 0.06;
+        cielo2.rotation.y -= dt * 0.000007;
+        cielo2.material.opacity = 0.18 + 0.22 * (0.5 + 0.5 * Math.sin(t * 0.0013));
+      }
+      requestAnimationFrame(animarCielo);
+    }
+    requestAnimationFrame(animarCielo);
+
+    // ---------- EFECTOS: columnas 3D y destellos ----------
+    let vista3D = false;
+    function aRGB(col) {
+      if (col.startsWith("#")) { const n = parseInt(col.slice(1), 16); return [n >> 16, (n >> 8) & 255, n & 255]; }
+      const m = col.match(/[\d.]+/g).map(Number); return [m[0], m[1], m[2]];
+    }
+    function colorEnEscala(c, t) {
+      const cols = (c.colores || ["#203040", "#40dcaa"]).map(aRGB);
+      t = Math.max(0, Math.min(1, t)) * (cols.length - 1);
+      const i = Math.min(cols.length - 2, Math.floor(t)), f = t - i;
+      const rgb = cols[i].map((v, k) => Math.round(v + (cols[i + 1][k] - v) * f));
+      return "rgb(" + rgb.join(",") + ")";
+    }
+    // Valor normalizado 0..1 según el rango de la leyenda
+    function normalizar(c, q) {
+      const v = c.min + q / 254 * (c.max - c.min);
+      return Math.max(0, Math.min(1, (v - c.leyendaMin) / ((c.leyendaMax - c.leyendaMin) || 1)));
+    }
+    const cachePuntos = {};
+    function puntosDeCapa(c, paso) {
+      const clave = c.id + "|" + paso;
+      if (cachePuntos[clave]) return cachePuntos[clave];
+      const W = window.GRILLA_ANCHO, H = window.GRILLA_ALTO, pts = [];
+      for (let f = 0; f < H; f += paso) for (let k = 0; k < W; k += paso) {
+        const q = c.valores[f * W + k];
+        if (q === 255) continue;
+        pts.push({ lat: 90 - (f + 0.5) * 180 / H, lng: -180 + (k + 0.5) * 360 / W, n: normalizar(c, q), q });
+      }
+      return (cachePuntos[clave] = pts);
+    }
+    function actualizarColumnas() {
+      const c = capaPorId[capa];
+      if (enPortada || !vista3D || !c || !c.valores) { globo.hexBinPointsData([]); return; }
+      globo
+        .hexAltitude(d => 0.004 + 0.16 * (d.sumWeight / d.points.length))
+        .hexTopColor(d => colorEnEscala(c, d.sumWeight / d.points.length))
+        .hexSideColor(d => colorEnEscala(c, d.sumWeight / d.points.length * 0.8))
+        .hexLabel(d => {
+          const q = d.points.reduce((a, p) => a + p.q, 0) / d.points.length;
+          const v = c.min + q / 254 * (c.max - c.min);
+          const txt = c.tipo === "porcentaje" ? Math.round(v * 100) + " %" : formato(v) + (c.sufijo || "");
+          return "<div style='background:rgba(11,15,20,.9);padding:4px 8px;border-radius:5px;font:12px system-ui'>" +
+            c.nombre + ": <b>" + txt + "</b><br><span style='color:#9fb0c3'>promedio de la zona</span></div>";
+        })
+        .hexBinPointsData(puntosDeCapa(c, 3));
+    }
+
+    // Destellos: pulsos de luz en los lugares con valores más altos de la capa
+    let puntoTocado = null;
+    function destellosDeCapa(c) {
+      if (!c || !c.valores) return [];
+      const cand = puntosDeCapa(c, 4).slice().sort((a, b) => b.n - a.n);
+      const elegidos = [];
+      for (const p of cand) {
+        if (elegidos.length >= 18) break;
+        if (elegidos.every(e => Math.abs(e.lat - p.lat) + Math.abs(e.lng - p.lng) > 14)) elegidos.push(p);
+      }
+      const col = aRGB(colorEnEscala(c, 1));
+      return elegidos.map((p, i) => ({ lat: p.lat, lng: p.lng, radio: 4, velocidad: 0.9, periodo: 2600 + (i % 5) * 450,
+        color: t => "rgba(" + col.join(",") + "," + (0.85 * (1 - t)) + ")" }));
+    }
+    function actualizarDestellos() {
+      if (enPortada) { globo.ringsData([]); return; }
+      const lista = destellosDeCapa(capaPorId[capa]);
+      if (puntoTocado) lista.push({ lat: puntoTocado[0], lng: puntoTocado[1], radio: 2.5, velocidad: 1.5, periodo: 1400,
+        color: t => "rgba(255,179,0," + (1 - t) + ")" });
+      globo.ringsData(lista);
+    }
+    grillasListas.then(() => { actualizarDestellos(); actualizarColumnas(); });
+
+    function marcarPunto(lat, lng) {
+      puntoTocado = [lat, lng];
+      actualizarDestellos();
+      marcador.setLatLng([lat, lng]).addTo(mapa);
+    }
+
+    // ---------- MAPA 2D ----------
+    const mapa = L.map("mapa", {
+      crs: L.CRS.EPSG4326,
+      zoomSnap: 0.1,
+      zoomDelta: 0.5,
+      minZoom: 1,
+      maxZoom: 14,
+      maxBounds: LIMITES,
+      maxBoundsViscosity: 1,
+      zoomControl: false
+    }).setView([0, 0], 1);
+    L.control.zoom({ position: "topright" }).addTo(mapa);
+
+    // Respaldo: imagen fija (se ve si el servicio de la NASA no responde)
+    // Respaldo liviano: solo se carga la primera vez que se abre el mapa 2D
+    let respaldo2D = null;
+    function cargarRespaldo2D() { if (!respaldo2D) respaldo2D = L.imageOverlay(IMAGEN_TIERRA, LIMITES).addTo(mapa).bringToBack(); }
+
+    // Fondo principal: mosaicos satelitales Sentinel-2 cloudless (EOX)
+    L.tileLayer("https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2020/default/WGS84/{z}/{y}/{x}.jpg", {
+      maxNativeZoom: 13, maxZoom: 14, attribution: CREDITO_SATELITE
+    }).addTo(mapa);
+
+    let capaMapa = null;
+    const fondoNoche2D = L.tileLayer.wms("https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi", {
+      layers: "VIIRS_Black_Marble", format: "image/png", version: "1.1.1", TIME: "2016-01-01",
+      attribution: CREDITO_NOCHE
+    });
+
+    // ---------- COMPARADOR DE CAPAS (mapa 2D) ----------
+    let comparando = false, capaB = "wdpa", overlayB = null, posDivisor = 0.5;
+    const paneB = mapa.createPane("comparacion");
+    paneB.style.zIndex = 450;
+    const divisor = document.createElement("div");
+    divisor.id = "divisor";
+    divisor.innerHTML = "<div class='linea'></div><div class='manija' title='Arrastrá para comparar'>⇔</div>" +
+      "<div class='etq-comp' id='etqA'></div><div class='etq-comp' id='etqB'></div>";
+    mapa.getContainer().appendChild(divisor);
+    L.DomEvent.disableClickPropagation(divisor);
+    function recortarComparacion() {
+      if (!comparando) return;
+      const tam = mapa.getSize(), x = tam.x * posDivisor;
+      const nw = mapa.containerPointToLayerPoint([0, 0]), se = mapa.containerPointToLayerPoint(tam);
+      paneB.style.clip = "rect(" + nw.y + "px, " + se.x + "px, " + se.y + "px, " + (nw.x + x) + "px)";
+      divisor.style.left = x + "px";
+    }
+    mapa.on("move zoom resize zoomend moveend", recortarComparacion);
+    (function () {
+      const manija = divisor.querySelector(".manija");
+      let arrastrando = false;
+      manija.addEventListener("pointerdown", e => { arrastrando = true; manija.setPointerCapture(e.pointerId); mapa.dragging.disable(); e.preventDefault(); });
+      manija.addEventListener("pointermove", e => {
+        if (!arrastrando) return;
+        const r = mapa.getContainer().getBoundingClientRect();
+        posDivisor = Math.max(0.02, Math.min(0.98, (e.clientX - r.left) / r.width));
+        recortarComparacion();
+      });
+      const soltar = () => { if (arrastrando) { arrastrando = false; mapa.dragging.enable(); } };
+      manija.addEventListener("pointerup", soltar);
+      manija.addEventListener("pointercancel", soltar);
+    })();
+    function dibujarComparacion() {
+      if (overlayB) { mapa.removeLayer(overlayB); overlayB = null; }
+      const etqA = document.getElementById("etqA"), etqB = document.getElementById("etqB");
+      if (!comparando) { divisor.style.display = "none"; paneB.style.clip = ""; return; }
+      const a = capaPorId[capa], b = capaPorId[capaB];
+      if (b) overlayB = L.imageOverlay(b.textura, LIMITES, { pane: "comparacion", opacity: opacidadBase() }).addTo(mapa);
+      etqA.textContent = "◀ " + (a ? a.nombre : "Sin capa");
+      etqB.textContent = (b ? b.nombre : "Sin capa") + " ▶";
+      etqA.style.display = etqB.style.display = "block";
+      divisor.style.display = "block";
+      recortarComparacion();
+    }
+    const marcador = L.circleMarker([0, 0], { radius: 7, color: "#ffb300", weight: 2, fillOpacity: 0 });
+
+    function dibujarMapa() {
+      if (capaMapa) { mapa.removeLayer(capaMapa); capaMapa = null; }
+      const c = capaPorId[capa];
+      if (!c) return;
+      capaMapa = L.imageOverlay(c.textura, LIMITES, {
+        opacity: opacidadBase(),
+        attribution: "Datos: SPUN (CC BY 4.0)"
+      }).addTo(mapa);
+    }
+    mapa.on("click", e => mostrarFicha(e.latlng.lat, e.latlng.lng));
+
+    // Ajusta el mapa para que el planisferio ocupe toda la pantalla
+    function encuadrarMapa() {
+      mapa.setMinZoom(1);
+      mapa.invalidateSize();
+      mapa.fitBounds(LIMITES, { animate: false });
+      mapa.setMinZoom(mapa.getZoom());
+    }
+
+    // Cambia la capa visible en el globo, el mapa, la leyenda y el selector
+    function cambiarCapa(id) {
+      capa = capaPorId[id] ? id : "";
+      sel.value = capa;
+      dibujarLeyenda();
+      dibujarMapa();
+      pintarGlobo();
+      if (comparando) dibujarComparacion();
+      if (ultimoPunto) mostrarFicha(ultimoPunto[0], ultimoPunto[1]);
+    }
+    cambiarCapa(capa);
+
+    // ---------- RECORRIDOS: FUNCIONES ----------
+    // Menú para elegir recorrido
+    function abrirMenu() {
+      paso = -1;
+      document.getElementById("btn3d").click(); // los recorridos se hacen en el globo
+      let html = "<h3>Recorridos</h3>";
+      recorridos.forEach((r, i) => {
+        html += "<button class='opcion' onclick='iniciarRecorrido(" + i + ")'>" + r.nombre +
+                " (" + r.paradas.length + " paradas)<small>" + r.descripcion + "</small></button>";
+      });
+      html += "<div class='botones'><button onclick='cerrarRecorrido()'>Cerrar</button></div>";
+      const panel = document.getElementById("recorrido");
+      panel.innerHTML = html;
+      panel.style.display = "block";
+      document.body.classList.add("en-recorrido");
+    }
+
+    function mostrarParada() {
+      const r = recorridos[tourActual];
+      const s = r.paradas[paso];
+      const ultima = paso === r.paradas.length - 1;
+      document.getElementById("recorrido").innerHTML =
+        "<div class='progreso'>" + r.nombre + " · parada " + (paso + 1) + " de " + r.paradas.length + "</div>" +
+        (s.foto ? "<div class='foto-lugar' id='fotoParada'></div>" : "") +
+        "<h3>" + s.titulo + "</h3>" +
+        "<div>" + s.texto + "</div>" +
+        (s.hongos ? "<div class='hongos' id='hongosParada'></div>" : "") +
+        "<div class='fuente'>Fuente: " + s.fuente + "</div>" +
+        "<div class='nota'>Las capas provienen de SPUN y de la WDPA; las cifras de este recorrido provienen de las fuentes citadas en cada parada.</div>" +
+        (ultima ? "<div class='nota' style='color:#40dcaa'>¿Te gustó el recorrido? <a href='#' style='color:#6ff0c6' onclick='abrirApoya();return false;'>Conocé cómo apoyar a quienes protegen la funga</a>.</div>" : "") +
+        "<div class='botones'>" +
+          "<button onclick='irAParada(paso - 1)'" + (paso === 0 ? " disabled" : "") + ">Anterior</button>" +
+          "<button onclick='" + (ultima ? "abrirMenu()" : "irAParada(paso + 1)") + "'>" + (ultima ? "Volver al menú" : "Siguiente") + "</button>" +
+          (ultima ? "" : "<button onclick='cerrarRecorrido()'>Salir</button>") +
+        "</div>";
+      if (s.foto) pintarFotoLugar("fotoParada", s.foto, nuevoToken("fotoParada"));
+      if (s.hongos) pintarHongos("hongosParada", s.lat, s.lng, s.hongos, nuevoToken("hongosParada"));
+      document.getElementById("recorrido").scrollTop = 0;
+    }
+
+    function irAParada(i) {
+      const paradas = recorridos[tourActual].paradas;
+      if (i < 0 || i >= paradas.length) return;
+      paso = i;
+      const s = paradas[i];
+      globo.controls().autoRotate = false;
+      if (s.capa) cambiarCapa(s.capa);
+      globo.pointOfView({ lat: s.lat, lng: s.lng, altitude: s.alt }, 2000);
+      mostrarParada();
+    }
+
+    function iniciarRecorrido(indice) {
+      tourActual = indice;
+      document.getElementById("btn3d").click();
+      document.getElementById("recorrido").style.display = "block";
+      document.body.classList.add("en-recorrido");
+      fichaPlegada = true;
+      document.getElementById("ficha").classList.add("plegada");
+      const bp = document.getElementById("plegarFicha");
+      if (bp) bp.textContent = "+";
+      irAParada(0);
+    }
+
+    function cerrarRecorrido() {
+      paso = -1;
+      document.getElementById("recorrido").style.display = "none";
+      document.body.classList.remove("en-recorrido");
+      globo.pointOfView({ lat: 20, lng: 0, altitude: 2.5 }, 1500);
+    }
+
+    // ---------- BOTONES ----------
+    sel.addEventListener("change", () => cambiarCapa(sel.value));
+    (function () {
+      const u = ["guido", "emanuelparra"].join("."), d = ["gmail", "com"].join(".");
+      const el = document.getElementById("contactoCorreo");
+      if (el) el.innerHTML = "<a href='mailto:" + u + "@" + d + "'>" + u + "@" + d + "</a>";
+    })();
+
+    // ---------- PORTADA: lógica ----------
+    let derivaActiva = false;
+    function derivarCamara(t0) {
+      // La cámara se desliza despacio sobre el planeta mientras la portada está abierta
+      if (!enPortada || sinMovimiento) return;
+      derivaActiva = true;
+      (function paso(t) {
+        if (!enPortada) { derivaActiva = false; return; }
+        const s = (t - t0) / 1000;
+        globo.pointOfView({ lat: -12 + 16 * Math.sin(s * 0.04), lng: -58 + s * 1.6, altitude: 0.95 + 0.12 * Math.sin(s * 0.07) }, 0);
+        requestAnimationFrame(paso);
+      })(t0);
+    }
+    function salirDePortada(luego) {
+      if (!enPortada) return;
+      enPortada = false;
+      document.getElementById("portada").classList.add("saliendo");
+      document.body.classList.remove("en-portada");
+      globo.controls().enabled = true;
+      ajustarAltoBarra();
+      setTimeout(() => { document.getElementById("portada").style.display = "none"; }, 950);
+      pintarGlobo();
+      ajustarOpacidadGlobo();
+      if (luego) luego();
+      else globo.pointOfView({ lat: -15, lng: -55, altitude: 2.3 }, 1800);
+    }
+    if (enPortada) {
+      document.body.classList.add("en-portada");
+      document.getElementById("globo").style.top = "0px";
+      globo.height(window.innerHeight);
+      globo.controls().enabled = false;
+      globo.controls().autoRotate = false;
+      setTimeout(() => derivarCamara(performance.now()), 3700);
+      document.getElementById("pExplorar").addEventListener("click", () => salirDePortada());
+      document.getElementById("pRecorrido").addEventListener("click", () => salirDePortada(() => iniciarRecorrido(0)));
+      document.getElementById("pSaltar").addEventListener("click", e => { e.preventDefault(); salirDePortada(); });
+      const conTeclado = e => { if (e.key === "Enter" || e.key === "Escape") salirDePortada(); };
+      document.addEventListener("keydown", conTeclado);
+      document.getElementById("portada").addEventListener("wheel", () => salirDePortada(), { passive: true });
+    } else {
+      document.getElementById("portada").style.display = "none";
+    }
+    escribirCreditoSat();
+    const selB = document.getElementById("selCapaB");
+    selB.innerHTML = sel.innerHTML;
+    selB.querySelector("option[value='']").textContent = "Sin capa";
+    selB.addEventListener("change", () => { capaB = selB.value; dibujarComparacion(); });
+    const btnComparar = document.getElementById("btnComparar");
+    btnComparar.addEventListener("click", () => {
+      comparando = !comparando;
+      btnComparar.classList.toggle("activo", comparando);
+      selB.style.display = comparando ? "" : "none";
+      if (comparando) {
+        if (capaB === capa) capaB = capa === "wdpa" ? "am_riqueza" : "wdpa";
+        selB.value = capaB;
+        document.getElementById("btn2d").click();
+      }
+      dibujarComparacion();
+      ajustarAltoBarra();
+    });
+    const btnNoche = document.getElementById("btnNoche");
+    btnNoche.addEventListener("click", () => {
+      modoNoche = !modoNoche;
+      btnNoche.classList.toggle("activo", modoNoche);
+      aplicarModoNoche();
+    });
+    const btn3dDatos = document.getElementById("btn3dDatos");
+    btn3dDatos.addEventListener("click", () => {
+      vista3D = !vista3D;
+      btn3dDatos.classList.toggle("activo", vista3D);
+      if (vista3D) {
+        document.getElementById("btn3d").click();
+        globo.controls().autoRotate = false;
+        const pov = globo.pointOfView();
+        if (pov.altitude < 1.6) globo.pointOfView({ lat: pov.lat, lng: pov.lng, altitude: 1.9 }, 1200);
+      }
+      pintarGlobo();
+    });
+
+    document.getElementById("btnRecorrido").addEventListener("click", abrirMenu);
+
+    // Página "Acerca de"
+    function abrirAcerca() { document.getElementById("acerca").style.display = "block"; }
+    function cerrarAcerca() { document.getElementById("acerca").style.display = "none"; }
+    document.getElementById("btnAcerca").addEventListener("click", abrirAcerca);
+    function abrirApoya() { cerrarAcerca(); document.getElementById("apoya").style.display = "block"; }
+    function cerrarApoya() { document.getElementById("apoya").style.display = "none"; }
+    document.getElementById("btnApoya").addEventListener("click", abrirApoya);
+    document.getElementById("cerrarApoya").addEventListener("click", cerrarApoya);
+    document.getElementById("apoya").addEventListener("click", e => { if (e.target.id === "apoya") cerrarApoya(); });
+    document.addEventListener("keydown", e => { if (e.key === "Escape") cerrarApoya(); });
+    document.getElementById("cerrarAcerca").addEventListener("click", cerrarAcerca);
+    document.addEventListener("keydown", e => { if (e.key === "Escape") cerrarAcerca(); });
+
+    document.getElementById("btn3d").addEventListener("click", () => {
+      if (comparando) btnComparar.click();
+      document.getElementById("globo").style.display = "block";
+      document.getElementById("mapa").style.display = "none";
+      document.getElementById("btn3d").classList.add("activo");
+      document.getElementById("creditoSat").style.display = "";
+      document.getElementById("btn2d").classList.remove("activo");
+    });
+
+    document.getElementById("btn2d").addEventListener("click", () => {
+      document.getElementById("recorrido").style.display = "none"; // los recorridos son solo del globo
+      document.body.classList.remove("en-recorrido");
+      paso = -1;
+      document.getElementById("globo").style.display = "none";
+      document.getElementById("mapa").style.display = "block";
+      document.getElementById("btn2d").classList.add("activo");
+      document.getElementById("creditoSat").style.display = "none";
+      document.getElementById("btn3d").classList.remove("activo");
+      cargarRespaldo2D();
+      encuadrarMapa();
+    });
+
+    function ajustarAltoBarra() {
+      const alto = document.getElementById("barra").offsetHeight;
+      const arriba = enPortada ? 0 : alto; // en la portada el globo ocupa toda la pantalla
+      ["globo", "mapa"].forEach(id => { document.getElementById(id).style.top = arriba + "px"; });
+      document.documentElement.style.setProperty("--alto-barra", alto + "px");
+      globo.width(window.innerWidth).height(window.innerHeight - arriba);
+      return alto;
+    }
+    ajustarAltoBarra();
+
+    window.addEventListener("resize", () => {
+      ajustarAltoBarra();
+      if (document.getElementById("mapa").style.display === "block") encuadrarMapa();
+    });
+  </script>
+</body>
+</html>
