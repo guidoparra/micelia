@@ -920,7 +920,8 @@
       "de EOX IT Services GmbH (contiene datos modificados de Copernicus Sentinel 2020), CC BY-NC-SA 4.0";
 
     const globo = Globe()(document.getElementById("globo"))
-      .globeTileEngineUrl(MOSAICO_GLOBO)
+      // Durante la portada no se piden mosaicos: la esfera de la portada los taparía igual
+      .globeTileEngineUrl(enPortada ? null : MOSAICO_GLOBO)
       .globeTileEngineMaxLevel(14)
       .backgroundImageUrl(IMAGEN_CIELO)
       .atmosphereColor("#4fc3f7")
@@ -1353,6 +1354,7 @@
       document.getElementById("portada").classList.add("saliendo");
       document.body.classList.remove("en-portada");
       globo.controls().enabled = true;
+      globo.globeTileEngineUrl(modoNoche ? MOSAICO_NOCHE : MOSAICO_GLOBO);
       ajustarAltoBarra();
       setTimeout(() => { document.getElementById("portada").style.display = "none"; }, 950);
       pintarGlobo();
