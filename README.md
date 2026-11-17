@@ -37,6 +37,7 @@ texturas/
 | Imágenes satelitales (mosaicos en vivo) | EOxCloudless 2020, EOX IT Services GmbH (contiene datos modificados de Copernicus Sentinel 2020) | CC BY-NC-SA 4.0 (uso no comercial) |
 | Luces nocturnas (modo noche, mosaicos en vivo) | NASA Black Marble 2016 (VIIRS), servido por NASA EOSDIS GIBS | Dominio público |
 | Imagen de respaldo del mapa 2D | Blue Marble de la NASA, incluida en el paquete three-globe | Dominio público (NASA) / MIT |
+| Órbitas de satélites (cargadas en vivo) | CelesTrak, grupo «visual» (elementos orbitales públicos); posiciones calculadas en el navegador con [satellite.js](https://github.com/shashwatak/satellite-js) | Datos públicos / MIT |
 | Fotos de paisajes (cargadas en vivo) | Wikimedia Commons; autor y licencia de cada foto se muestran junto a ella | CC BY, CC BY-SA o dominio público |
 | Fotos de hongos (cargadas en vivo) | iNaturalist, observaciones de grado de investigación | CC0, CC BY, CC BY-SA o CC BY-NC |
 | Cielo estrellado (`texturas/cielo.webp`), logo e imagen para compartir | Generadas para este proyecto | CC BY 4.0 |
@@ -75,6 +76,8 @@ cálculos propios y aproximados; no reemplazan las cifras de los estudios.
 
 - Los mapas son predicciones de modelos, no mediciones directas. La riqueza se expresa en taxones
   estimados cada 100 m² (VT para hongos AM, OTU para EcM).
+- Los satélites del globo están en su posición real. Los destellos y las estrellas fugaces son una recreación
+  de fenómenos reales en momentos y lugares al azar, y los meteoros se dibujan más largos que en la realidad.
 - Este sitio **no sirve para identificar hongos ni para decidir si un hongo es comestible**.
 - Proyecto independiente, sin afiliación con SPUN, UNEP-WCMC ni IUCN.
 

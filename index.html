@@ -40,6 +40,11 @@
     button.activo { background: #2e7d5b; border-color: #2e7d5b; }
     button.destacado { border-color: #ffb300; color: #ffb300; }
     #aviso { font-size: 12px; color: #ffb300; margin-left: auto; }
+    #orbitas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; }
+    #avisoOrbita { position: fixed; z-index: 1200; pointer-events: none; display: none; max-width: 260px;
+      background: rgba(11,15,20,.92); border: 1px solid rgba(159,197,255,.35); border-radius: 8px;
+      padding: 7px 10px; font-size: 12px; line-height: 1.4; color: #dfe9f5; }
+    #avisoOrbita b { color: #fff; }
     #globo, #mapa { position: absolute; top: 56px; left: 0; right: 0; bottom: 0; }
     #mapa { display: none; background: #0b0f14; }
     #ficha {
@@ -264,6 +269,7 @@
 
   <div id="leyenda"></div>
   <div id="creditoSat"></div>
+  <div id="avisoOrbita"></div>
 
   <div id="globo"></div>
   <div id="mapa"></div>
@@ -354,6 +360,15 @@
          39 km. Para el análisis científico conviene usar los archivos originales. Las cifras de los
          recorridos provienen de las fuentes citadas en cada parada, aunque las leí a través de
          resúmenes de prensa y comunicados de los autores; las del recorrido «Hongos de Argentina» son un cálculo mío sobre los mapas.</p>
+
+      <h3>Satélites y meteoros</h3>
+      <p>Los puntos que se mueven alrededor del globo son satélites reales, entre ellos la Estación Espacial
+         Internacional y la estación china Tiangong. Sus posiciones se calculan en tu navegador, en tiempo real, con los
+         elementos orbitales públicos de <a href="https://celestrak.org" target="_blank" rel="noopener">CelesTrak</a> y la
+         librería <a href="https://github.com/shashwatak/satellite-js" target="_blank" rel="noopener">satellite.js</a> (MIT).
+         Solo se ven cuando les da el sol, como pasa en el cielo real. Los destellos y las estrellas fugaces son una
+         recreación: el fenómeno es real (los paneles de un satélite reflejan el sol y miles de meteoros entran cada
+         día a la atmósfera, a unos 100 km de altura), pero el momento y el lugar en que aparecen acá son al azar, y las estelas se dibujan más largas para que se distingan.</p>
 
       <h3>Datos de SPUN</h3>
       <p>Los mapas de riqueza, rareza y densidad de hifas son de la
@@ -468,7 +483,7 @@
       <p>Este sitio no usa cookies, no tiene publicidad, no mide visitas y no guarda datos de quienes lo
          visitan. Para funcionar, tu navegador pide recursos a servicios externos, que reciben esa consulta
          (y tu dirección IP) como cualquier visita a sus sitios: unpkg.com (librerías del globo y del mapa),
-         EOX (imágenes satelitales), NASA GIBS (modo noche), iNaturalist (fotos de hongos) y Wikimedia
+         EOX (imágenes satelitales), NASA GIBS (modo noche), CelesTrak (órbitas de satélites), iNaturalist (fotos de hongos) y Wikimedia
          Commons (fotos de paisajes). Cada uno tiene su propia política de privacidad.</p>
 
       <h3>Contacto</h3>
@@ -480,6 +495,7 @@
   </div>
 
   <script src="https://unpkg.com/globe.gl@2.46.2/dist/globe.gl.min.js" integrity="sha384-1uolMBZ25k3zJcNwCLEv49+L+m2dZudqAzsoSAJfQTzDCSBxJzrMuZ2dkp/5JKiT" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/satellite.js@5.0.0/dist/satellite.min.js" integrity="sha384-e6V1JVpc+kVNTxT0gEOla7yL4c92Romsw7itPoipfzHbEjzUwPhTv6oeVDMHHzqT" crossorigin="anonymous"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous"></script>
   <script src="texturas/datos.js"></script>
   <script>
@@ -1074,6 +1090,225 @@
       requestAnimationFrame(animarCielo);
     }
     requestAnimationFrame(animarCielo);
+
+    // ---------- ÓRBITAS: SATÉLITES REALES, DESTELLOS Y METEOROS ----------
+    // Posiciones reales calculadas con elementos orbitales de CelesTrak (grupo «visual»: los satélites
+    // más brillantes). Los destellos y meteoros son una recreación de fenómenos reales en momentos al azar.
+    const RADIO_TIERRA_KM = 6371;
+    const ORBITAS_URL = "https://celestrak.org/NORAD/elements/gp.php?GROUP=visual&FORMAT=TLE";
+    const DESTACADOS = { 25544: "Estación Espacial Internacional", 48274: "Estación espacial Tiangong" };
+    const lienzo = document.createElement("canvas");
+    lienzo.id = "orbitas";
+    document.getElementById("globo").appendChild(lienzo);
+    const ctx = lienzo.getContext("2d");
+    let satelites = [], meteoros = [], destello = null;
+    let proximoMeteoro = performance.now() + 6000, proximoDestello = performance.now() + 4000, ultimoCalculo = 0;
+    let solDir = null, V3 = null;
+
+    async function cargarOrbitas() {
+      if (!window.satellite) return;
+      let tle = null;
+      try { // se guarda unas horas para no pedirle a CelesTrak los mismos datos en cada visita
+        const g = JSON.parse(localStorage.getItem("micelia_orbitas") || "null");
+        if (g && Date.now() - g.t < 6 * 3600e3) tle = g.tle;
+      } catch (e) {}
+      if (!tle) {
+        try {
+          const r = await fetch(ORBITAS_URL);
+          if (!r.ok) return;
+          tle = await r.text();
+          if (!/^1 \d{5}/m.test(tle)) return;
+          try { localStorage.setItem("micelia_orbitas", JSON.stringify({ t: Date.now(), tle })); } catch (e) {}
+        } catch (e) { return; }
+      }
+      const l = tle.split(/\r?\n/).map(x => x.trimEnd());
+      for (let k = 0; k + 2 < l.length + 1; k++) {
+        if (!l[k + 1] || !l[k + 2] || !l[k + 1].startsWith("1 ") || !l[k + 2].startsWith("2 ")) continue;
+        try {
+          const rec = satellite.twoline2satrec(l[k + 1], l[k + 2]);
+          const id = +l[k + 1].slice(2, 7);
+          satelites.push({ rec, id, nombre: DESTACADOS[id] || l[k].trim(), destacado: !!DESTACADOS[id], estela: [] });
+        } catch (e) {}
+        k += 2;
+      }
+    }
+
+    // Dirección del Sol (punto subsolar), con la fórmula aproximada del Almanaque Náutico
+    function puntoSubsolar(fecha) {
+      const d = fecha / 86400000 - 10957.5, rad = Math.PI / 180;
+      const g = (357.529 + 0.98560028 * d) * rad, q = 280.459 + 0.98564736 * d;
+      const L = (q + 1.915 * Math.sin(g) + 0.020 * Math.sin(2 * g)) * rad, e = (23.439 - 0.00000036 * d) * rad;
+      const ra = Math.atan2(Math.cos(e) * Math.sin(L), Math.cos(L)) / rad, dec = Math.asin(Math.sin(e) * Math.sin(L)) / rad;
+      const gmst = (280.46061837 + 360.98564736629 * d) % 360;
+      return { lat: dec, lng: ((ra - gmst + 540) % 360) - 180 };
+    }
+    const aV3 = (p) => V3.clone().set(p.x, p.y, p.z);
+
+    function calcularPosiciones(ahora) {
+      const fecha = new Date(ahora), gmst = satellite.gstime(fecha);
+      const s = puntoSubsolar(ahora);
+      solDir = aV3(globo.getCoords(s.lat, s.lng, 0)).normalize();
+      const R = globo.getGlobeRadius();
+      for (const sat of satelites) {
+        const pv = satellite.propagate(sat.rec, fecha);
+        if (!pv || !pv.position) { sat.p = null; continue; }
+        const geo = satellite.eciToGeodetic(pv.position, gmst);
+        sat.lat = geo.latitude * 180 / Math.PI; sat.lng = geo.longitude * 180 / Math.PI; sat.km = geo.height;
+        sat.p = aV3(globo.getCoords(sat.lat, sat.lng, sat.km / RADIO_TIERRA_KM));
+        // ¿Le da el sol? (sombra cilíndrica de la Tierra)
+        const n = sat.p.clone().divideScalar(R), d = n.dot(solDir);
+        sat.alSol = d > 0 || n.clone().sub(solDir.clone().multiplyScalar(d)).length() > 1;
+        if (sat.destacado) {
+          const u = sat.estela[sat.estela.length - 1];
+          if (!u || ahora - u.t > 15000) { sat.estela.push({ t: ahora, p: sat.p.clone() }); if (sat.estela.length > 32) sat.estela.shift(); }
+        }
+      }
+    }
+
+    // ¿El punto queda tapado por la Tierra vista desde la cámara?
+    function visible(p, cam, R) {
+      const d = p.clone().sub(cam), a = d.dot(d), b = 2 * cam.dot(d), c = cam.dot(cam) - R * R;
+      const disc = b * b - 4 * a * c;
+      if (disc <= 0) return true;
+      const t = (-b - Math.sqrt(disc)) / (2 * a);
+      return !(t > 0.001 && t < 0.999);
+    }
+    function aPantalla(p, camara, w, h) {
+      const v = p.clone().project(camara);
+      return { x: (v.x + 1) / 2 * w, y: (1 - v.y) / 2 * h };
+    }
+
+    function nuevoMeteoro(ahora, cam, R) {
+      // Punto al azar en la cara visible, sin acercarse al borde
+      const c = cam.clone().normalize();
+      let u;
+      do { u = c.clone().add(aV3({ x: Math.random() * 2 - 1, y: Math.random() * 2 - 1, z: Math.random() * 2 - 1 }).multiplyScalar(0.9)).normalize(); }
+      while (u.dot(c) < 0.45);
+      const t = aV3({ x: Math.random() - 0.5, y: Math.random() - 0.5, z: Math.random() - 0.5 });
+      t.sub(u.clone().multiplyScalar(t.dot(u))).normalize(); // dirección tangente
+      const arco = (4 + Math.random() * 4) * Math.PI / 180; // algo más largo que en la realidad para que se distinga
+      meteoros.push({ u, t, arco, t0: ahora, dur: 650 + Math.random() * 550, R, brillo: 0.6 + Math.random() * 0.4 });
+    }
+    function puntoMeteoro(m, f) {
+      // Avanza sobre un círculo máximo bajando de ~115 a ~75 km de altura
+      const ang = m.arco * f, alt = 1 + (115 - 40 * f) / RADIO_TIERRA_KM;
+      return m.u.clone().multiplyScalar(Math.cos(ang)).add(m.t.clone().multiplyScalar(Math.sin(ang))).multiplyScalar(m.R * alt);
+    }
+
+    function dibujarOrbitas() {
+      requestAnimationFrame(dibujarOrbitas);
+      const ahora = performance.now();
+      const camara = globo.camera();
+      if (!V3) V3 = camara.position.clone();
+      const w = lienzo.clientWidth, h = lienzo.clientHeight, dpr = Math.min(window.devicePixelRatio || 1, 2);
+      if (!w || !h || document.getElementById("globo").style.display === "none") return;
+      if (lienzo.width !== Math.round(w * dpr)) { lienzo.width = Math.round(w * dpr); lienzo.height = Math.round(h * dpr); }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+      const R = globo.getGlobeRadius(), cam = camara.position;
+      if (satelites.length && window.satellite && ahora - ultimoCalculo > 250) { calcularPosiciones(Date.now()); ultimoCalculo = ahora; }
+
+      // Satélites: puntos tenues, solo los que reciben luz solar
+      for (const sat of satelites) {
+        sat.pantalla = null;
+        if (!sat.p || !sat.alSol || !visible(sat.p, cam, R)) continue;
+        const q = aPantalla(sat.p, camara, w, h);
+        if (q.x < -10 || q.y < -10 || q.x > w + 10 || q.y > h + 10) continue;
+        sat.pantalla = q;
+        if (sat.destacado) {
+          // Estela de los últimos minutos
+          ctx.lineWidth = 1.2;
+          for (let k = 1; k < sat.estela.length; k++) {
+            const a = sat.estela[k - 1].p, b = sat.estela[k].p;
+            if (!visible(a, cam, R) || !visible(b, cam, R)) continue;
+            const pa = aPantalla(a, camara, w, h), pb = aPantalla(b, camara, w, h);
+            ctx.strokeStyle = "rgba(255,214,120," + (0.35 * k / sat.estela.length).toFixed(3) + ")";
+            ctx.beginPath(); ctx.moveTo(pa.x, pa.y); ctx.lineTo(pb.x, pb.y); ctx.stroke();
+          }
+          const ult = sat.estela[sat.estela.length - 1];
+          if (ult && visible(ult.p, cam, R)) {
+            const pu = aPantalla(ult.p, camara, w, h);
+            ctx.strokeStyle = "rgba(255,214,120,.35)";
+            ctx.beginPath(); ctx.moveTo(pu.x, pu.y); ctx.lineTo(q.x, q.y); ctx.stroke();
+          }
+          const halo = ctx.createRadialGradient(q.x, q.y, 0, q.x, q.y, 9);
+          halo.addColorStop(0, "rgba(255,236,190,.9)"); halo.addColorStop(1, "rgba(255,214,120,0)");
+          ctx.fillStyle = halo; ctx.beginPath(); ctx.arc(q.x, q.y, 9, 0, 7); ctx.fill();
+          ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(q.x, q.y, 2.1, 0, 7); ctx.fill();
+          if (!enPortada) {
+            ctx.font = "600 10.5px system-ui, sans-serif";
+            ctx.fillStyle = "rgba(255,236,190,.85)";
+            ctx.fillText(sat.id === 25544 ? "EEI" : "Tiangong", q.x + 7, q.y - 6);
+          }
+        } else {
+          ctx.fillStyle = "rgba(214,230,255,.62)";
+          ctx.beginPath(); ctx.arc(q.x, q.y, 1.2, 0, 7); ctx.fill();
+        }
+      }
+
+      if (sinMovimiento) return;
+      // Destello: un satélite iluminado refleja el sol durante un par de segundos
+      if (!destello && ahora > proximoDestello) {
+        const candidatos = satelites.filter(s => s.pantalla && !s.destacado);
+        if (candidatos.length) destello = { sat: candidatos[Math.floor(Math.random() * candidatos.length)], t0: ahora, dur: 1800 + Math.random() * 1200 };
+        proximoDestello = ahora + 6000 + Math.random() * 9000;
+      }
+      if (destello) {
+        const f = (ahora - destello.t0) / destello.dur, q = destello.sat.pantalla;
+        if (f >= 1) destello = null;
+        else if (q) {
+          const a = Math.pow(Math.sin(Math.PI * f), 2), r = 2.5 + 6.5 * a;
+          const g = ctx.createRadialGradient(q.x, q.y, 0, q.x, q.y, r);
+          g.addColorStop(0, "rgba(255,255,255," + a.toFixed(3) + ")"); g.addColorStop(1, "rgba(200,225,255,0)");
+          ctx.fillStyle = g; ctx.beginPath(); ctx.arc(q.x, q.y, r, 0, 7); ctx.fill();
+          ctx.strokeStyle = "rgba(235,245,255," + (0.8 * a).toFixed(3) + ")"; ctx.lineWidth = 0.8;
+          ctx.beginPath();
+          ctx.moveTo(q.x - r * 1.5, q.y); ctx.lineTo(q.x + r * 1.5, q.y);
+          ctx.moveTo(q.x, q.y - r * 1.5); ctx.lineTo(q.x, q.y + r * 1.5);
+          ctx.stroke();
+        }
+      }
+
+      // Estrellas fugaces: meteoros que se encienden a ~100 km de altura
+      if (ahora > proximoMeteoro) { nuevoMeteoro(ahora, cam, R); proximoMeteoro = ahora + 7000 + Math.random() * 12000; }
+      meteoros = meteoros.filter(m => ahora - m.t0 < m.dur + 400);
+      for (const m of meteoros) {
+        const f = Math.min(1, (ahora - m.t0) / m.dur);
+        const fin = (ahora - m.t0 - m.dur) / 400;          // la estela se apaga después de que la cabeza se consume
+        const cola = Math.max(0, f - 0.45);
+        const pc = puntoMeteoro(m, f), pk = puntoMeteoro(m, cola);
+        if (!visible(pc, cam, R)) continue;
+        const a = aPantalla(pk, camara, w, h), b = aPantalla(pc, camara, w, h);
+        const vida = (fin > 0 ? 1 - fin : 1) * Math.min(1, f * 4) * m.brillo;
+        const gr = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
+        gr.addColorStop(0, "rgba(180,220,255,0)");
+        gr.addColorStop(1, "rgba(235,248,255," + (0.95 * vida).toFixed(3) + ")");
+        ctx.strokeStyle = gr; ctx.lineWidth = 1.5; ctx.lineCap = "round";
+        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+        if (fin <= 0) {
+          const g = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, 4);
+          g.addColorStop(0, "rgba(255,255,255," + (0.9 * vida).toFixed(3) + ")"); g.addColorStop(1, "rgba(160,230,255,0)");
+          ctx.fillStyle = g; ctx.beginPath(); ctx.arc(b.x, b.y, 4, 0, 7); ctx.fill();
+        }
+      }
+    }
+    requestAnimationFrame(dibujarOrbitas);
+    cargarOrbitas();
+
+    // Al pasar el mouse sobre la EEI o Tiangong, se muestra qué es
+    const avisoOrbita = document.getElementById("avisoOrbita");
+    document.getElementById("globo").addEventListener("mousemove", ev => {
+      const caja = lienzo.getBoundingClientRect();
+      const x = ev.clientX - caja.left, y = ev.clientY - caja.top;
+      const s = satelites.find(s => s.destacado && s.pantalla && Math.hypot(s.pantalla.x - x, s.pantalla.y - y) < 12);
+      if (!s || enPortada) { avisoOrbita.style.display = "none"; return; }
+      avisoOrbita.innerHTML = "<b>" + s.nombre + "</b><br>Posición en tiempo real · " + Math.round(s.km) +
+        " km de altura<br>Da una vuelta a la Tierra cada 90 minutos aprox.";
+      avisoOrbita.style.left = (ev.clientX + 14) + "px";
+      avisoOrbita.style.top = (ev.clientY + 14) + "px";
+      avisoOrbita.style.display = "block";
+    });
+    document.getElementById("globo").addEventListener("mouseleave", () => { avisoOrbita.style.display = "none"; });
 
     // ---------- EFECTOS: columnas 3D y destellos ----------
     let vista3D = false;
