@@ -366,7 +366,7 @@
          Internacional y la estación china Tiangong. Sus posiciones se calculan en tu navegador, en tiempo real, con los
          elementos orbitales públicos de <a href="https://celestrak.org" target="_blank" rel="noopener">CelesTrak</a> y la
          librería <a href="https://github.com/shashwatak/satellite-js" target="_blank" rel="noopener">satellite.js</a> (MIT).
-         Solo se ven cuando les da el sol, como pasa en el cielo real. Los destellos y las estrellas fugaces son una
+         Solo se ven cuando les da el sol, como pasa en el cielo real; las dos estaciones se muestran siempre, en gris mientras cruzan la sombra de la Tierra. Los destellos y las estrellas fugaces son una
          recreación: el fenómeno es real (los paneles de un satélite reflejan el sol y miles de meteoros entran cada
          día a la atmósfera, a unos 100 km de altura), pero el momento y el lugar en que aparecen acá son al azar, y las estelas se dibujan más largas para que se distingan.</p>
 
@@ -1211,7 +1211,8 @@
       // Satélites: puntos tenues, solo los que reciben luz solar
       for (const sat of satelites) {
         sat.pantalla = null;
-        if (!sat.p || !sat.alSol || !visible(sat.p, cam, R)) continue;
+        // Las estaciones se ven siempre (en gris cuando están en la sombra); el resto, solo al sol
+        if (!sat.p || (!sat.alSol && !sat.destacado) || !visible(sat.p, cam, R)) continue;
         const q = aPantalla(sat.p, camara, w, h);
         if (q.x < -10 || q.y < -10 || q.x > w + 10 || q.y > h + 10) continue;
         sat.pantalla = q;
@@ -1222,23 +1223,35 @@
             const a = sat.estela[k - 1].p, b = sat.estela[k].p;
             if (!visible(a, cam, R) || !visible(b, cam, R)) continue;
             const pa = aPantalla(a, camara, w, h), pb = aPantalla(b, camara, w, h);
-            ctx.strokeStyle = "rgba(255,214,120," + (0.35 * k / sat.estela.length).toFixed(3) + ")";
+            ctx.strokeStyle = (sat.alSol ? "rgba(255,214,120," : "rgba(170,185,205,") + (0.35 * k / sat.estela.length).toFixed(3) + ")";
             ctx.beginPath(); ctx.moveTo(pa.x, pa.y); ctx.lineTo(pb.x, pb.y); ctx.stroke();
           }
           const ult = sat.estela[sat.estela.length - 1];
           if (ult && visible(ult.p, cam, R)) {
             const pu = aPantalla(ult.p, camara, w, h);
-            ctx.strokeStyle = "rgba(255,214,120,.35)";
+            ctx.strokeStyle = sat.alSol ? "rgba(255,214,120,.35)" : "rgba(170,185,205,.35)";
             ctx.beginPath(); ctx.moveTo(pu.x, pu.y); ctx.lineTo(q.x, q.y); ctx.stroke();
           }
-          const halo = ctx.createRadialGradient(q.x, q.y, 0, q.x, q.y, 9);
-          halo.addColorStop(0, "rgba(255,236,190,.9)"); halo.addColorStop(1, "rgba(255,214,120,0)");
-          ctx.fillStyle = halo; ctx.beginPath(); ctx.arc(q.x, q.y, 9, 0, 7); ctx.fill();
-          ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(q.x, q.y, 2.1, 0, 7); ctx.fill();
+          if (sat.alSol) {
+            const halo = ctx.createRadialGradient(q.x, q.y, 0, q.x, q.y, 9);
+            halo.addColorStop(0, "rgba(255,236,190,.9)"); halo.addColorStop(1, "rgba(255,214,120,0)");
+            ctx.fillStyle = halo; ctx.beginPath(); ctx.arc(q.x, q.y, 9, 0, 7); ctx.fill();
+            ctx.fillStyle = "#fff";
+          } else {
+            ctx.strokeStyle = "rgba(6,8,15,.55)"; ctx.lineWidth = 3;
+            ctx.beginPath(); ctx.arc(q.x, q.y, 3.6, 0, 7); ctx.stroke();
+            ctx.strokeStyle = "rgba(205,218,235,.85)"; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.arc(q.x, q.y, 3.6, 0, 7); ctx.stroke();
+            ctx.fillStyle = "rgba(170,185,205,.85)";
+          }
+          ctx.beginPath(); ctx.arc(q.x, q.y, 2.1, 0, 7); ctx.fill();
           if (!enPortada) {
             ctx.font = "600 10.5px system-ui, sans-serif";
-            ctx.fillStyle = "rgba(255,236,190,.85)";
-            ctx.fillText(sat.id === 25544 ? "EEI" : "Tiangong", q.x + 7, q.y - 6);
+            const etiqueta = (sat.id === 25544 ? "EEI" : "Tiangong") + (sat.alSol ? "" : " · en sombra");
+            ctx.lineWidth = 3; ctx.lineJoin = "round"; ctx.strokeStyle = "rgba(6,8,15,.7)";
+            ctx.strokeText(etiqueta, q.x + 7, q.y - 6);
+            ctx.fillStyle = sat.alSol ? "rgba(255,236,190,.92)" : "rgba(205,218,235,.92)";
+            ctx.fillText(etiqueta, q.x + 7, q.y - 6);
           }
         } else {
           ctx.fillStyle = "rgba(214,230,255,.62)";
@@ -1303,7 +1316,8 @@
       const s = satelites.find(s => s.destacado && s.pantalla && Math.hypot(s.pantalla.x - x, s.pantalla.y - y) < 12);
       if (!s || enPortada) { avisoOrbita.style.display = "none"; return; }
       avisoOrbita.innerHTML = "<b>" + s.nombre + "</b><br>Posición en tiempo real · " + Math.round(s.km) +
-        " km de altura<br>Da una vuelta a la Tierra cada 90 minutos aprox.";
+        " km de altura<br>Da una vuelta a la Tierra cada 90 minutos aprox." +
+        (s.alSol ? "" : "<br>Ahora pasa por la sombra de la Tierra: desde el suelo no se vería.");
       avisoOrbita.style.left = (ev.clientX + 14) + "px";
       avisoOrbita.style.top = (ev.clientY + 14) + "px";
       avisoOrbita.style.display = "block";
