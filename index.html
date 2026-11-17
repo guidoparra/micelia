@@ -26,12 +26,81 @@
     .p-marca { display: inline-flex; align-items: center; gap: 10px; font-size: 22px; font-weight: 800; letter-spacing: 0.12em;
       text-transform: uppercase; color: #ffe3a3; margin-bottom: 10px; opacity: 0; animation: pAparece 1.2s 0.1s forwards; }
     .p-marca .logo { width: 34px; height: 34px; filter: drop-shadow(0 0 8px rgba(255,179,0,.6)); }
+    /* Barra flotante: solo el botón del menú, la capa actual y el aviso */
     #barra {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
-      display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
-      padding: 10px 14px; background: rgba(11, 15, 20, 0.9);
+      position: fixed; top: 14px; left: 14px; right: 14px; z-index: 1002; pointer-events: none;
+      display: flex; gap: 10px; align-items: center;
     }
-    #barra .grupo { display: flex; gap: 6px; }
+    #barra > * { pointer-events: auto; }
+    .vidrio, .menu-boton, .chip-capa, #panelMenu {
+      background: rgba(10, 14, 20, 0.72); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,.1); box-shadow: 0 10px 34px rgba(0,0,0,.45);
+    }
+    .menu-boton { display: flex; align-items: center; gap: 10px; padding: 6px 16px 6px 6px; border-radius: 40px;
+      color: #f3f6fa; font-weight: 800; font-size: 16px; letter-spacing: .04em; position: relative; z-index: 2; }
+    .menu-boton .logo { width: 24px; height: 24px; }
+    .ham { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center;
+      background: rgba(255,179,0,.12); border: 1px solid rgba(255,179,0,.45); transition: transform .5s cubic-bezier(.2,.8,.2,1); }
+    .ham i, .ham i::before, .ham i::after { display: block; width: 15px; height: 2px; border-radius: 2px; background: #ffcf66;
+      transition: transform .45s cubic-bezier(.2,.8,.2,1), opacity .3s; }
+    .ham i { position: relative; }
+    .ham i::before, .ham i::after { content: ""; position: absolute; left: 0; }
+    .ham i::before { top: -5px; } .ham i::after { top: 5px; }
+    body.menu-abierto .ham { transform: rotate(180deg); }
+    body.menu-abierto .ham i { background: transparent; }
+    body.menu-abierto .ham i::before { transform: translateY(5px) rotate(45deg); }
+    body.menu-abierto .ham i::after { transform: translateY(-5px) rotate(-45deg); }
+    .chip-capa { display: flex; align-items: center; gap: 9px; padding: 9px 16px; border-radius: 30px; font-size: 13px;
+      color: #eef3f8; margin: 0 auto; transition: opacity .4s, transform .4s; }
+    .chip-capa .punto { width: 10px; height: 10px; border-radius: 50%; background: #69b764; box-shadow: 0 0 8px currentColor; }
+    .chip-capa .flecha { color: #8ea2b8; }
+    body.menu-abierto .chip-capa { opacity: 0; transform: translateY(-8px); pointer-events: none; }
+
+    /* Panel del menú */
+    #panelMenu { position: fixed; left: 14px; top: 14px; bottom: 14px; width: 330px; z-index: 1001; border-radius: 22px;
+      overflow: hidden; visibility: hidden; clip-path: circle(0px at 37px 37px);
+      transition: clip-path .75s cubic-bezier(.65,0,.25,1), visibility 0s linear .75s; }
+    body.menu-abierto #panelMenu { visibility: visible; clip-path: circle(150% at 37px 37px);
+      transition: clip-path .85s cubic-bezier(.65,0,.25,1), visibility 0s; }
+    #hifasMenu { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+    #hifasMenu path { fill: none; stroke: #f3eee4; stroke-linecap: round; }
+    .pm-contenido { position: relative; height: 100%; overflow-y: auto; padding: 66px 18px 18px; box-sizing: border-box; }
+    .pm-cab { display: none; }
+    #panelMenu h4 { margin: 14px 0 6px; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: #8ea2b8; font-weight: 600; }
+    .pm-item { opacity: 0; transform: translateX(-12px); transition: opacity .35s, transform .45s cubic-bezier(.2,.8,.2,1); }
+    body.menu-abierto .pm-item { opacity: 1; transform: none; }
+    #panelMenu button { background: transparent; border: 0; color: #dfe8f1; font: inherit; font-size: 13px; }
+    .seg { display: flex; background: rgba(255,255,255,.06); border-radius: 12px; padding: 4px; }
+    .seg button { flex: 1; padding: 8px !important; border-radius: 9px; color: #a9b8c8 !important; }
+    .seg button.activo { background: #ffb300 !important; color: #14100a !important; font-weight: 700; }
+    #selCapa { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+    #listaCapas .grupo-capas { font-size: 10.5px; color: #6f8399; margin: 6px 0 2px 2px; }
+    #listaCapas button { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 5px 10px; border-radius: 9px; font-size: 12.5px !important; }
+    #listaCapas button:hover { background: rgba(255,255,255,.06); }
+    #listaCapas button.activa { background: rgba(255,179,0,.12); outline: 1px solid rgba(255,179,0,.45); color: #fff; }
+    #listaCapas i { width: 22px; height: 8px; border-radius: 4px; flex: none; }
+    .interruptor { display: flex; flex-direction: column; align-items: flex-start; position: relative; width: 100%;
+      text-align: left; padding: 6px 52px 6px 4px !important; border-radius: 10px; }
+    .interruptor:hover { background: rgba(255,255,255,.04) !important; }
+    .interruptor small { color: #8ea2b8; font-size: 11px; margin-top: 2px; }
+    .interruptor::after { content: ""; position: absolute; right: 6px; top: 50%; margin-top: -10px; width: 36px; height: 20px;
+      border-radius: 12px; background: rgba(255,255,255,.14); transition: background .3s; }
+    .interruptor::before { content: ""; position: absolute; right: 25px; top: 50%; margin-top: -7px; width: 14px; height: 14px;
+      border-radius: 50%; background: #9fb0c3; z-index: 1; transition: right .3s cubic-bezier(.2,.8,.2,1), background .3s; }
+    .interruptor.activo { background: transparent !important; }
+    .interruptor.activo::after { background: #ffb300; }
+    .interruptor.activo::before { right: 9px; background: #fff; }
+    #selCapaB { width: 100%; margin: 4px 0 6px; }
+    #btnRecorrido { width: 100%; margin-top: 10px; padding: 11px !important; border-radius: 12px; font-weight: 700;
+      background: linear-gradient(135deg,#ffb300,#ff8a00) !important; color: #1a1205 !important; }
+    .pm-fila { display: flex; gap: 8px; margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.08); }
+    .pm-fila button { flex: 1; padding: 10px !important; border-radius: 12px; border: 1px solid rgba(255,255,255,.14) !important; }
+    .pm-fila .apoya { border-color: rgba(64,220,170,.5) !important; color: #7ff0cc !important; }
+    #globo { transition: transform .85s cubic-bezier(.65,0,.25,1); }
+    @media (min-width: 901px) {
+      body.menu-abierto #globo { transform: translateX(165px); }
+      body.menu-abierto #leyenda { opacity: 0; pointer-events: none; }
+    }
     button {
       background: #1c2733; color: #e8eef5; border: 1px solid #34465a;
       padding: 6px 12px; border-radius: 6px; cursor: pointer;
@@ -39,13 +108,13 @@
     button:disabled { opacity: 0.4; cursor: default; }
     button.activo { background: #2e7d5b; border-color: #2e7d5b; }
     button.destacado { border-color: #ffb300; color: #ffb300; }
-    #aviso { font-size: 12px; color: #ffb300; margin-left: auto; }
+    #aviso { font-size: 12px; color: #ffb300; opacity: .85; text-shadow: 0 1px 6px #000; transition: opacity .4s; }
     #orbitas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; }
     #avisoOrbita { position: fixed; z-index: 1200; pointer-events: none; display: none; max-width: 260px;
       background: rgba(11,15,20,.92); border: 1px solid rgba(159,197,255,.35); border-radius: 8px;
       padding: 7px 10px; font-size: 12px; line-height: 1.4; color: #dfe9f5; }
     #avisoOrbita b { color: #fff; }
-    #globo, #mapa { position: absolute; top: 56px; left: 0; right: 0; bottom: 0; }
+    #globo, #mapa { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
     #mapa { display: none; background: #0b0f14; }
     #ficha {
       position: fixed; right: 14px; bottom: 14px; z-index: 1000; width: 280px;
@@ -117,7 +186,7 @@
       padding: 6px 10px; border-radius: 6px; font: inherit; font-size: 14px;
     }
     #leyenda {
-      position: fixed; left: 14px; top: calc(var(--alto-barra, 56px) + 14px); z-index: 1000; width: 260px;
+      position: fixed; left: 14px; top: calc(var(--alto-barra, 56px) + 14px); transition: opacity .4s; z-index: 1000; width: 260px;
       background: rgba(11, 15, 20, 0.92); border: 1px solid #34465a;
       border-radius: 8px; padding: 10px 12px; font-size: 13px; line-height: 1.4;
     }
@@ -174,7 +243,7 @@
     .p-boton:focus-visible { outline: 2px solid #ffb300; outline-offset: 6px; border-radius: 40px; }
     .p-pie { position: absolute; left: 24px; bottom: 18px; font-size: 11px; color: #9fb0c3; }
     .p-pie a { color: #ffcf66; }
-    body.en-portada #barra, body.en-portada #leyenda, body.en-portada #ficha, body.en-portada #creditoSat { opacity: 0; pointer-events: none; }
+    body.en-portada #panelMenu, body.en-portada #barra, body.en-portada #leyenda, body.en-portada #ficha, body.en-portada #creditoSat { opacity: 0; pointer-events: none; }
     #barra, #leyenda, #ficha, #creditoSat { transition: opacity 0.8s ease; }
     @keyframes pAparece { to { opacity: 1; } }
     @keyframes pSube { to { opacity: 1; transform: none; } }
@@ -203,11 +272,21 @@
     #ficha .grupo-ficha { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #9fb0c3; margin: 8px 0 2px 0; }
     #ficha .coords { font-size: 12px; color: #9fb0c3; margin-bottom: 6px; }
     #ficha .pie { font-size: 11px; color: #9fb0c3; margin-top: 8px; }
+    #ficha a { color: #7fb8ff; }
     @media (max-width: 700px) {
-      #barra { gap: 6px; padding: 8px 10px; }
-      #barra .grupo { flex-wrap: wrap; }
-      #barra button { padding: 6px 9px; font-size: 13px; }
-      #barra select { max-width: calc(100vw - 20px); }
+      #barra { top: 10px; left: 10px; right: 10px; gap: 8px; }
+      .menu-boton .nombre { display: none; }
+      .menu-boton { padding: 5px 12px 5px 5px; }
+      .chip-capa { margin: 0 0 0 auto; padding: 8px 12px; font-size: 12px; max-width: 58vw; }
+      .chip-capa #chipCapaTxt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      #aviso { display: none; }
+      /* En el celular el menú sube desde abajo, como una hoja */
+      #panelMenu { left: 0; right: 0; top: auto; bottom: 0; width: auto; height: 80vh; border-radius: 22px 22px 0 0;
+        clip-path: inset(100% 0 0 0 round 22px 22px 0 0); }
+      body.menu-abierto #panelMenu { clip-path: inset(0 0 0 0 round 22px 22px 0 0); }
+      .pm-contenido { padding-top: 16px; }
+      .pm-cab { display: flex; align-items: center; gap: 10px; font-weight: 800; }
+      .pm-cab .logo { width: 22px; height: 22px; }
       .leaflet-control-attribution { font-size: 9px; }
       #aviso { font-size: 11px; margin-left: 0; }
       #leyenda { top: auto; bottom: 10px; left: 10px; width: calc(100vw - 46px); padding: 8px 12px; }
@@ -224,27 +303,40 @@
 <body>
 
   <div id="barra">
-    <a class="marca" href="?explorar" title="Micelia · Explorá la red que sostiene la vida"><svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><g stroke="#ffb300" stroke-width="2" stroke-linecap="round" fill="none"><path d="M16 16L6.5 8.5M16 16L26.5 9.5M16 16L9 25.5M16 16L25 25M6.5 8.5L3.5 14M26.5 9.5L28.5 3.5M9 25.5L3.5 23.5M25 25L29 20"/></g><g fill="#ffb300"><circle cx="16" cy="16" r="3.6"/><circle cx="6.5" cy="8.5" r="2.1"/><circle cx="26.5" cy="9.5" r="2.1"/><circle cx="9" cy="25.5" r="2.1"/><circle cx="25" cy="25" r="2.1"/></g></svg><span>Micelia</span></a>
-    <div class="grupo">
-      <button id="btn3d" class="activo">Globo 3D</button>
-      <button id="btn2d">Mapa 2D</button>
-    </div>
-    <div class="grupo">
-      <select id="selCapa" aria-label="Capa de datos">
-        <option value="">Sin capa (solo la Tierra)</option>
-      </select>
-    </div>
-    <div class="grupo">
-      <button id="btn3dDatos" title="Muestra la capa como columnas en relieve">Columnas 3D</button>
-      <button id="btnNoche" title="Luces nocturnas de la Tierra">Modo noche</button>
-      <button id="btnComparar" title="Compará dos capas con una cortina deslizable">Comparar</button>
-      <select id="selCapaB" aria-label="Capa para comparar" style="display:none"></select>
-      <button id="btnRecorrido" class="destacado">Recorridos</button>
-      <button id="btnApoya" class="apoya">Apoyá</button>
-      <button id="btnAcerca">Acerca de</button>
-    </div>
+    <button id="btnMenu" class="menu-boton" aria-expanded="false" aria-controls="panelMenu" title="Abrir el menú">
+      <span class="ham" aria-hidden="true"><i></i></span><svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><g stroke="#ffb300" stroke-width="2" stroke-linecap="round" fill="none"><path d="M16 16L6.5 8.5M16 16L26.5 9.5M16 16L9 25.5M16 16L25 25M6.5 8.5L3.5 14M26.5 9.5L28.5 3.5M9 25.5L3.5 23.5M25 25L29 20"/></g><g fill="#ffb300"><circle cx="16" cy="16" r="3.6"/><circle cx="6.5" cy="8.5" r="2.1"/><circle cx="26.5" cy="9.5" r="2.1"/><circle cx="9" cy="25.5" r="2.1"/><circle cx="25" cy="25" r="2.1"/></g></svg><span class="nombre">Micelia</span>
+    </button>
+    <button id="chipCapa" class="chip-capa" title="Cambiar la capa de datos"><span class="punto"></span><span id="chipCapaTxt">Capa</span><span class="flecha" aria-hidden="true">▾</span></button>
     <div id="aviso">Mapas predictivos de SPUN: son modelos, no mediciones directas</div>
   </div>
+
+  <nav id="panelMenu" aria-label="Menú" aria-hidden="true">
+    <svg id="hifasMenu" aria-hidden="true"></svg>
+    <div class="pm-contenido">
+      <div class="pm-cab pm-item"><svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><g stroke="#ffb300" stroke-width="2" stroke-linecap="round" fill="none"><path d="M16 16L6.5 8.5M16 16L26.5 9.5M16 16L9 25.5M16 16L25 25M6.5 8.5L3.5 14M26.5 9.5L28.5 3.5M9 25.5L3.5 23.5M25 25L29 20"/></g><g fill="#ffb300"><circle cx="16" cy="16" r="3.6"/><circle cx="6.5" cy="8.5" r="2.1"/><circle cx="26.5" cy="9.5" r="2.1"/><circle cx="9" cy="25.5" r="2.1"/><circle cx="25" cy="25" r="2.1"/></g></svg><span>Micelia</span></div>
+      <h4 class="pm-item">Vista</h4>
+      <div class="seg pm-item">
+        <button id="btn3d" class="activo">Globo 3D</button>
+        <button id="btn2d">Mapa 2D</button>
+      </div>
+      <button id="btnRecorrido" class="destacado pm-item">▶ Recorridos narrados</button>
+      <h4 class="pm-item">Capa de datos</h4>
+      <select id="selCapa" aria-label="Capa de datos" class="pm-item">
+        <option value="">Sin capa (solo la Tierra)</option>
+      </select>
+      <div id="listaCapas" class="pm-item"></div>
+      <h4 class="pm-item">Herramientas</h4>
+      <button id="btn3dDatos" class="interruptor pm-item" title="Muestra la capa como columnas en relieve">Columnas 3D<small>La capa en relieve</small></button>
+      <button id="btnNoche" class="interruptor pm-item" title="Luces nocturnas de la Tierra">Modo noche<small>Luces de las ciudades</small></button>
+      <button id="btnOrbita" class="interruptor pm-item" title="Estaciones espaciales y satélites en tiempo real">Hongos en órbita<small>Estaciones y satélites en vivo</small></button>
+      <button id="btnComparar" class="interruptor pm-item" title="Compará dos capas con una cortina deslizable">Comparar capas<small>Cortina deslizable en el mapa 2D</small></button>
+      <select id="selCapaB" aria-label="Capa para comparar" style="display:none" class="pm-item"></select>
+      <div class="pm-fila pm-item">
+        <button id="btnApoya" class="apoya">♥ Apoyá</button>
+        <button id="btnAcerca">Acerca de</button>
+      </div>
+    </div>
+  </nav>
 
   <div id="portada" role="dialog" aria-label="Portada">
     <div class="p-sombra"></div>
@@ -362,11 +454,11 @@
          resúmenes de prensa y comunicados de los autores; las del recorrido «Hongos de Argentina» son un cálculo mío sobre los mapas.</p>
 
       <h3>Satélites y meteoros</h3>
-      <p>Los puntos que se mueven alrededor del globo son satélites reales, entre ellos la Estación Espacial
+      <p>Con el modo «Hongos en órbita» encendido, los puntos que se mueven alrededor del globo son satélites reales, entre ellos la Estación Espacial
          Internacional y la estación china Tiangong. Sus posiciones se calculan en tu navegador, en tiempo real, con los
          elementos orbitales públicos de <a href="https://celestrak.org" target="_blank" rel="noopener">CelesTrak</a> y la
          librería <a href="https://github.com/shashwatak/satellite-js" target="_blank" rel="noopener">satellite.js</a> (MIT).
-         Solo se ven cuando les da el sol, como pasa en el cielo real; las dos estaciones se muestran siempre, en gris mientras cruzan la sombra de la Tierra. Los destellos y las estrellas fugaces son una
+         Solo se ven cuando les da el sol, como pasa en el cielo real; las dos estaciones se muestran siempre, en gris mientras cruzan la sombra de la Tierra. Las estrellas fugaces (siempre visibles) y los destellos son una
          recreación: el fenómeno es real (los paneles de un satélite reflejan el sol y miles de meteoros entran cada
          día a la atmósfera, a unos 100 km de altura), pero el momento y el lugar en que aparecen acá son al azar, y las estelas se dibujan más largas para que se distingan.</p>
 
@@ -483,7 +575,7 @@
       <p>Este sitio no usa cookies, no tiene publicidad, no mide visitas y no guarda datos de quienes lo
          visitan. Para funcionar, tu navegador pide recursos a servicios externos, que reciben esa consulta
          (y tu dirección IP) como cualquier visita a sus sitios: unpkg.com (librerías del globo y del mapa),
-         EOX (imágenes satelitales), NASA GIBS (modo noche), CelesTrak (órbitas de satélites), iNaturalist (fotos de hongos) y Wikimedia
+         EOX (imágenes satelitales), NASA GIBS (modo noche), CelesTrak (órbitas de satélites, solo si activás «Hongos en órbita»), iNaturalist (fotos de hongos) y Wikimedia
          Commons (fotos de paisajes). Cada uno tiene su propia política de privacidad.</p>
 
       <h3>Contacto</h3>
@@ -722,6 +814,33 @@
     });
     sel.value = capa;
 
+    // Lista de capas del menú (botones que manejan el selector oculto)
+    function colorDeCapa(c) { return c ? (c.colores ? c.colores[Math.floor(c.colores.length * 0.7)] : c.categorias[0][0]) : "#4fc3f7"; }
+    function armarListaCapas() {
+      const lista = document.getElementById("listaCapas");
+      let html = "", grupo = null;
+      CAPAS.forEach(c => {
+        const g = c.grupo || "Otras";
+        if (g !== grupo) { grupo = g; html += "<div class='grupo-capas'>" + escaparHTML(g) + "</div>"; }
+        html += "<button data-capa='" + c.id + "'><i style='background:" + colorDeCapa(c) + "'></i>" + escaparHTML(c.nombre) + "</button>";
+      });
+      html += "<button data-capa=''><i style='background:#3a4a5c'></i>Sin capa (solo la Tierra)</button>";
+      lista.innerHTML = html;
+      lista.addEventListener("click", ev => {
+        const b = ev.target.closest("button[data-capa]");
+        if (!b) return;
+        sel.value = b.dataset.capa;
+        sel.dispatchEvent(new Event("change"));
+        if (window.innerWidth <= 700) cerrarPanel();
+      });
+    }
+    function marcarCapaEnMenu() {
+      document.querySelectorAll("#listaCapas button").forEach(b => b.classList.toggle("activa", b.dataset.capa === capa));
+      const c = capaPorId[capa];
+      document.getElementById("chipCapaTxt").textContent = c ? c.nombre : "Sin capa";
+      document.querySelector("#chipCapa .punto").style.color = document.querySelector("#chipCapa .punto").style.background = colorDeCapa(c);
+    }
+
     // Descomprime las grillas de valores (base64 + zlib)
     async function decodificarGrilla(b64) {
       const bytes = Uint8Array.from(atob(b64), ch => ch.charCodeAt(0));
@@ -948,7 +1067,7 @@
       .ringMaxRadius(d => d.radio)
       .ringPropagationSpeed(d => d.velocidad)
       .ringRepeatPeriod(d => d.periodo)
-      .onGlobeClick(({ lat, lng }) => mostrarFicha(lat, lng))
+      .onGlobeClick(({ lat, lng }, ev) => { if (!tocarEstacion(ev)) mostrarFicha(lat, lng); })
       .onHexClick((h, ev, { lat, lng }) => mostrarFicha(lat, lng))
       .hexBinPointLat("lat").hexBinPointLng("lng").hexBinPointWeight("n")
       .hexBinResolution(2)
@@ -1103,7 +1222,7 @@
     const ctx = lienzo.getContext("2d");
     let satelites = [], meteoros = [], destello = null;
     let proximoMeteoro = performance.now() + 6000, proximoDestello = performance.now() + 4000, ultimoCalculo = 0;
-    let solDir = null, V3 = null;
+    let solDir = null, V3 = null, orbitasActivas = false, orbitasPedidas = false;
 
     async function cargarOrbitas() {
       if (!window.satellite) return;
@@ -1211,6 +1330,7 @@
       // Satélites: puntos tenues, solo los que reciben luz solar
       for (const sat of satelites) {
         sat.pantalla = null;
+        if (!orbitasActivas) continue;
         // Las estaciones se ven siempre (en gris cuando están en la sombra); el resto, solo al sol
         if (!sat.p || (!sat.alSol && !sat.destacado) || !visible(sat.p, cam, R)) continue;
         const q = aPantalla(sat.p, camara, w, h);
@@ -1261,11 +1381,12 @@
 
       if (sinMovimiento) return;
       // Destello: un satélite iluminado refleja el sol durante un par de segundos
-      if (!destello && ahora > proximoDestello) {
+      if (orbitasActivas && !destello && ahora > proximoDestello) {
         const candidatos = satelites.filter(s => s.pantalla && !s.destacado);
         if (candidatos.length) destello = { sat: candidatos[Math.floor(Math.random() * candidatos.length)], t0: ahora, dur: 1800 + Math.random() * 1200 };
         proximoDestello = ahora + 6000 + Math.random() * 9000;
       }
+      if (destello && !orbitasActivas) destello = null;
       if (destello) {
         const f = (ahora - destello.t0) / destello.dur, q = destello.sat.pantalla;
         if (f >= 1) destello = null;
@@ -1306,7 +1427,47 @@
       }
     }
     requestAnimationFrame(dibujarOrbitas);
-    cargarOrbitas();
+
+    // «Hongos en órbita»: las estaciones y los satélites se muestran solo si se activa el modo
+    // (las órbitas se descargan recién la primera vez que se enciende)
+    const btnOrbita = document.getElementById("btnOrbita");
+    btnOrbita.addEventListener("click", () => {
+      orbitasActivas = !orbitasActivas;
+      btnOrbita.classList.toggle("activo", orbitasActivas);
+      if (orbitasActivas && !orbitasPedidas) { orbitasPedidas = true; cargarOrbitas(); }
+      if (!orbitasActivas) avisoOrbita.style.display = "none";
+    });
+
+    // Ficha de cada estación: qué tiene que ver con los hongos (y con los microbios)
+    const FICHA_ESTACION = {
+      25544: "<p>🍄 <b>En la EEI crecen hongos.</b> La tripulación limpia las paredes todas las semanas para frenar el moho. " +
+        "Un <i>Aspergillus niger</i> aislado a bordo resultó más resistente al estrés que sus parientes de la Tierra " +
+        "(<a href='https://doi.org/10.1128/mSystems.00112-18' target='_blank' rel='noopener'>Romsdahl et al., 2018</a>).</p>" +
+        "<p>🛡 <b>Un hongo como escudo.</b> En 2018 se cultivó a bordo un hongo negro, <i>Cladosporium sphaerospermum</i>, " +
+        "que redujo cerca de un 2 % la radiación bajo una capa de menos de 2 mm: una pista para proteger futuras bases en Marte " +
+        "(<a href='https://doi.org/10.1101/2020.07.16.205534' target='_blank' rel='noopener'>Shunk et al., preprint</a>).</p>",
+      48274: "<p>🦠 <b>Vida microscópica a bordo.</b> En las superficies de la estación china se describió en 2025 una bacteria " +
+        "nueva para la ciencia, <i>Niallia tiangongensis</i>, adaptada al ambiente de la estación. Estudiar qué hongos y bacterias " +
+        "viajan con las personas ayuda a cuidar su salud en misiones largas.</p>"
+    };
+    function mostrarFichaEstacion(sat) {
+      ultimoPunto = null;
+      document.getElementById("ficha").innerHTML = "<h3><span>" + escaparHTML(sat.nombre) + "</span></h3><div class='cuerpo'>" +
+        "<div class='coords'>En vivo · " + Math.round(sat.km) + " km de altura · " +
+        (sat.alSol ? "iluminada por el Sol" : "cruzando la sombra de la Tierra") + "</div>" +
+        (FICHA_ESTACION[sat.id] || "") +
+        "<div class='pie'>Da una vuelta a la Tierra cada 90 minutos aprox. Posición calculada con datos de CelesTrak.</div></div>";
+    }
+    // Devuelve true si el clic cayó sobre una estación (y entonces muestra su ficha)
+    function tocarEstacion(ev) {
+      if (!orbitasActivas || !ev) return false;
+      const caja = lienzo.getBoundingClientRect();
+      const x = ev.clientX - caja.left, y = ev.clientY - caja.top;
+      const s = satelites.find(s => s.destacado && s.pantalla && Math.hypot(s.pantalla.x - x, s.pantalla.y - y) < 20);
+      if (!s) return false;
+      mostrarFichaEstacion(s);
+      return true;
+    }
 
     // Al pasar el mouse sobre la EEI o Tiangong, se muestra qué es
     const avisoOrbita = document.getElementById("avisoOrbita");
@@ -1314,10 +1475,11 @@
       const caja = lienzo.getBoundingClientRect();
       const x = ev.clientX - caja.left, y = ev.clientY - caja.top;
       const s = satelites.find(s => s.destacado && s.pantalla && Math.hypot(s.pantalla.x - x, s.pantalla.y - y) < 12);
-      if (!s || enPortada) { avisoOrbita.style.display = "none"; return; }
+      if (!s || enPortada || !orbitasActivas) { avisoOrbita.style.display = "none"; return; }
       avisoOrbita.innerHTML = "<b>" + s.nombre + "</b><br>Posición en tiempo real · " + Math.round(s.km) +
         " km de altura<br>Da una vuelta a la Tierra cada 90 minutos aprox." +
-        (s.alSol ? "" : "<br>Ahora pasa por la sombra de la Tierra: desde el suelo no se vería.");
+        (s.alSol ? "" : "<br>Ahora pasa por la sombra de la Tierra: desde el suelo no se vería.") +
+        "<br><span style='color:#ffcf66'>Tocala para ver qué tiene que ver con los hongos</span>";
       avisoOrbita.style.left = (ev.clientX + 14) + "px";
       avisoOrbita.style.top = (ev.clientY + 14) + "px";
       avisoOrbita.style.display = "block";
@@ -1503,7 +1665,9 @@
       pintarGlobo();
       if (comparando) dibujarComparacion();
       if (ultimoPunto) mostrarFicha(ultimoPunto[0], ultimoPunto[1]);
+      marcarCapaEnMenu();
     }
+    armarListaCapas();
     cambiarCapa(capa);
 
     // ---------- RECORRIDOS: FUNCIONES ----------
@@ -1670,6 +1834,89 @@
     function abrirAcerca() { document.getElementById("acerca").style.display = "block"; }
     function cerrarAcerca() { document.getElementById("acerca").style.display = "none"; }
     document.getElementById("btnAcerca").addEventListener("click", abrirAcerca);
+
+    // ---------- MENÚ: PANEL CON HIFAS ----------
+    const panelMenu = document.getElementById("panelMenu"), btnMenu = document.getElementById("btnMenu");
+    const svgHifas = document.getElementById("hifasMenu");
+    // Dibuja un micelio al azar: filamentos finos que nacen del botón y se ramifican en ángulo agudo
+    function dibujarHifas() {
+      const w = panelMenu.clientWidth, h = panelMenu.clientHeight, celular = window.innerWidth <= 700;
+      svgHifas.setAttribute("viewBox", "0 0 " + w + " " + h);
+      const segs = [];
+      function crecer(x, y, ang, largo, grosor, prof, t0) {
+        let px = x, py = y, d = "M" + x.toFixed(1) + " " + y.toFixed(1), recorrido = 0;
+        const pasos = Math.max(3, Math.round(largo / 26));
+        for (let k = 0; k < pasos; k++) {
+          ang += (Math.random() - 0.5) * 0.45;                       // las hifas ondulan apenas
+          const l = largo / pasos, nx = px + Math.cos(ang) * l, ny = py + Math.sin(ang) * l;
+          const cx = (px + nx) / 2 + Math.sin(ang) * (Math.random() - 0.5) * 7, cy = (py + ny) / 2 - Math.cos(ang) * (Math.random() - 0.5) * 7;
+          d += " Q" + cx.toFixed(1) + " " + cy.toFixed(1) + " " + nx.toFixed(1) + " " + ny.toFixed(1);
+          recorrido += l;
+          // Ramificación lateral, siempre hacia adelante
+          if (prof < 4 && Math.random() < 0.42 - prof * 0.06) {
+            const lado = Math.random() < 0.5 ? -1 : 1;
+            crecer(nx, ny, ang + lado * (0.45 + Math.random() * 0.5), largo * (0.42 + Math.random() * 0.25), grosor * 0.68, prof + 1,
+              t0 + (recorrido / largo) * 0.55);
+          }
+          px = nx; py = ny;
+          if (px < -20 || py < -20 || px > w + 20 || py > h + 20) break;
+        }
+        segs.push({ d, grosor, prof, t0 });
+      }
+      const ox = celular ? w / 2 : 37, oy = celular ? 6 : 37;
+      const raices = celular ? 5 : 4;
+      for (let r = 0; r < raices; r++) {
+        const base = celular ? Math.PI / 2 + (r - (raices - 1) / 2) * 0.5 : 0.35 + r * 0.32;
+        crecer(ox, oy, base + (Math.random() - 0.5) * 0.2, (celular ? h : h * 0.9) * (0.7 + Math.random() * 0.35), 1.5, 0, r * 0.05);
+      }
+      svgHifas.innerHTML = segs.map(g => "<path d='" + g.d + "' stroke-width='" + g.grosor.toFixed(2) + "' data-t='" + g.t0.toFixed(2) +
+        "' style='opacity:" + (0.75 - g.prof * 0.1).toFixed(2) + "'/>").join("");
+      svgHifas.querySelectorAll("path").forEach(p => {
+        const L = p.getTotalLength();
+        p.style.strokeDasharray = L; p.style.strokeDashoffset = L;
+      });
+      svgHifas.style.transition = "none"; svgHifas.style.opacity = 1;
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        svgHifas.querySelectorAll("path").forEach(p => {
+          p.style.transition = "stroke-dashoffset 1.3s cubic-bezier(.3,.6,.3,1) " + (0.1 + +p.dataset.t) + "s";
+          p.style.strokeDashoffset = 0;
+        });
+        // Cuando terminan de crecer, quedan de fondo, tenues
+        svgHifas.style.transition = "opacity 1.2s ease 1.9s"; svgHifas.style.opacity = 0.2;
+      }));
+    }
+    function abrirPanel() {
+      if (document.body.classList.contains("menu-abierto")) return;
+      document.body.classList.add("menu-abierto");
+      panelMenu.setAttribute("aria-hidden", "false");
+      btnMenu.setAttribute("aria-expanded", "true");
+      btnMenu.title = "Cerrar el menú";
+      // Los ítems aparecen en cascada
+      panelMenu.querySelectorAll(".pm-item").forEach((el, i) => { el.style.transitionDelay = (0.25 + i * 0.035).toFixed(3) + "s"; });
+      if (!sinMovimiento) dibujarHifas(); else svgHifas.innerHTML = "";
+    }
+    function cerrarPanel() {
+      if (!document.body.classList.contains("menu-abierto")) return;
+      document.body.classList.remove("menu-abierto");
+      panelMenu.setAttribute("aria-hidden", "true");
+      btnMenu.setAttribute("aria-expanded", "false");
+      btnMenu.title = "Abrir el menú";
+      panelMenu.querySelectorAll(".pm-item").forEach(el => { el.style.transitionDelay = "0s"; });
+      svgHifas.style.transition = "opacity .3s"; svgHifas.style.opacity = 0;
+    }
+    btnMenu.addEventListener("click", () => document.body.classList.contains("menu-abierto") ? cerrarPanel() : abrirPanel());
+    document.getElementById("chipCapa").addEventListener("click", abrirPanel);
+    document.addEventListener("keydown", e => { if (e.key === "Escape") cerrarPanel(); });
+    // Las acciones que abren otra cosa cierran el menú
+    ["btnRecorrido", "btnApoya", "btnAcerca"].forEach(id => document.getElementById(id).addEventListener("click", cerrarPanel));
+    ["btn2d", "btn3d"].forEach(id => document.getElementById(id).addEventListener("click", () => { if (window.innerWidth <= 700) cerrarPanel(); }));
+    // En el celular, tocar fuera del panel lo cierra
+    document.addEventListener("pointerdown", e => {
+      if (window.innerWidth > 700 || !document.body.classList.contains("menu-abierto")) return;
+      if (!panelMenu.contains(e.target) && !btnMenu.contains(e.target)) cerrarPanel();
+    });
+    // El globo se corre al abrir el menú: avisarle a globe.gl que cambió su posición en pantalla
+    document.getElementById("globo").addEventListener("transitionend", () => window.dispatchEvent(new Event("resize")));
     function abrirApoya() { cerrarAcerca(); document.getElementById("apoya").style.display = "block"; }
     function cerrarApoya() { document.getElementById("apoya").style.display = "none"; }
     document.getElementById("btnApoya").addEventListener("click", abrirApoya);
@@ -1702,11 +1949,11 @@
     });
 
     function ajustarAltoBarra() {
-      const alto = document.getElementById("barra").offsetHeight;
-      const arriba = enPortada ? 0 : alto; // en la portada el globo ocupa toda la pantalla
-      ["globo", "mapa"].forEach(id => { document.getElementById(id).style.top = arriba + "px"; });
+      // La barra flota sobre el globo: el globo ocupa siempre toda la pantalla
+      const b = document.getElementById("barra");
+      const alto = b.offsetTop + b.offsetHeight;
       document.documentElement.style.setProperty("--alto-barra", alto + "px");
-      globo.width(window.innerWidth).height(window.innerHeight - arriba);
+      globo.width(window.innerWidth).height(window.innerHeight);
       return alto;
     }
     ajustarAltoBarra();
