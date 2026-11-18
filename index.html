@@ -437,7 +437,7 @@
       <p>Bajo cada paso hay una red de hongos que alimenta a las plantas. Elegí un lugar y te mostramos cuánta hay.</p>
       <button id="piesUbicacion" class="pies-b1">📍 Usar mi ubicación</button>
       <button id="piesElegir" class="pies-b2">🌍 Elegir un punto en el globo</button>
-      <div class="pies-priv"><span>🔒</span><span>Tu ubicación no se guarda ni se envía a Micelia. Se redondea a unos 10 km y solo se usa
+      <div class="pies-priv"><span>🔒</span><span>Tu ubicación no se guarda ni se envía a Micelia. Se redondea a unos 5 km y solo se usa
         para buscar el nombre del lugar (OpenStreetMap) y hongos observados cerca (iNaturalist).</span></div>
       <div id="piesError" class="pies-error"></div>
       <button id="piesCerrar" class="pies-x" aria-label="Cerrar">✕</button>
@@ -2130,8 +2130,8 @@
       if (!navigator.geolocation) { err.textContent = "Este navegador no permite usar la ubicación. Elegí un punto en el globo."; return; }
       err.textContent = "Buscando tu ubicación…";
       navigator.geolocation.getCurrentPosition(p => {
-        // Se redondea a 0,1° (unos 10 km): alcanza para los mapas y protege la ubicación exacta
-        const lat = Math.round(p.coords.latitude * 10) / 10, lng = Math.round(p.coords.longitude * 10) / 10;
+        // Se redondea a 0,05° (unos 5 km): alcanza para los mapas y protege la ubicación exacta
+        const lat = Math.round(p.coords.latitude * 20) / 20, lng = Math.round(p.coords.longitude * 20) / 20;
         cerrarPiesModal();
         mostrarPies(lat, lng);
       }, e => {
