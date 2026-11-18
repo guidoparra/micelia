@@ -38,6 +38,7 @@ texturas/
 | Luces nocturnas (modo noche, mosaicos en vivo) | NASA Black Marble 2016 (VIIRS), servido por NASA EOSDIS GIBS | Dominio público |
 | Imagen de respaldo del mapa 2D | Blue Marble de la NASA, incluida en el paquete three-globe | Dominio público (NASA) / MIT |
 | Órbitas de satélites (cargadas en vivo) | CelesTrak, grupo «visual» (elementos orbitales públicos); posiciones calculadas en el navegador con [satellite.js](https://github.com/shashwatak/satellite-js) | Datos públicos / MIT |
+| Nombre de los lugares en «¿Qué hay bajo tus pies?» (en vivo) | © colaboradores de [OpenStreetMap](https://www.openstreetmap.org/copyright), servicio Nominatim | ODbL |
 | Fotos de paisajes (cargadas en vivo) | Wikimedia Commons; autor y licencia de cada foto se muestran junto a ella | CC BY, CC BY-SA o dominio público |
 | Fotos de hongos (cargadas en vivo) | iNaturalist, observaciones de grado de investigación | CC0, CC BY, CC BY-SA o CC BY-NC |
 | Cielo estrellado (`texturas/cielo.webp`), logo e imagen para compartir | Generadas para este proyecto | CC BY 4.0 |
@@ -62,11 +63,14 @@ Publicaciones de SPUN que hay que citar al usar sus datos:
 3. WDPA: polígonos con estado distinto de *Proposed*, sin reservas de biósfera de la UNESCO,
    rasterizados a 8192 x 4096 con `gdal_rasterize` y promediados a 4096 x 2048.
 4. Grillas de la ficha: promedio en celdas de 0,35° (unos 39 km), cuantizado a 8 bits.
-5. «Extrapolación» se muestra como 1 − valor de la capa *Extrapolation* de SPUN, que mide la cobertura
+5. «¿Qué hay bajo tus pies?»: los km de hifas por metro cuadrado salen de la densidad de SPUN (m por cm³) multiplicada por el
+   volumen de los primeros 15 cm de suelo (150.000 cm³), la profundidad a la que corresponden las estimaciones de Stewart et al. (2026).
+   Con esa cuenta, el total para la tierra firme de la grilla da 8,2 × 10¹⁶ km, del mismo orden que el publicado (1,1 × 10¹⁷ km).
+6. «Extrapolación» se muestra como 1 − valor de la capa *Extrapolation* de SPUN, que mide la cobertura
    de los datos de entrenamiento (Van Nuland et al., 2025). El estudio considera extrapolación por encima del 5 %.
-6. Hotspots: el 5 % de la superficie terrestre con mayor riqueza AM (percentil 95 ponderado por área,
+7. Hotspots: el 5 % de la superficie terrestre con mayor riqueza AM (percentil 95 ponderado por área,
    como en el estudio). Con estos datos el umbral da 39,3 VT, frente a los 39,9 VT publicados.
-7. Comparaciones del tipo «más que en el X % de la tierra»: percentiles ponderados por superficie,
+8. Comparaciones del tipo «más que en el X % de la tierra»: percentiles ponderados por superficie,
    calculados sobre la misma grilla que muestra la ficha.
 
 Los porcentajes de la capa «Hotspots AM y protección» y del recorrido «Hongos de Argentina» son

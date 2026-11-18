@@ -97,6 +97,68 @@
     .pm-fila button { flex: 1; padding: 10px !important; border-radius: 12px; border: 1px solid rgba(255,255,255,.14) !important; }
     .pm-fila .apoya { border-color: rgba(64,220,170,.5) !important; color: #7ff0cc !important; }
     #globo { transition: transform .85s cubic-bezier(.65,0,.25,1); }
+    #btnPies { width: 100%; margin-top: 8px; padding: 10px !important; border-radius: 12px;
+      border: 1px solid rgba(255,179,0,.55) !important; color: #ffd98a !important; font-weight: 700; }
+
+    /* ¿Qué hay bajo tus pies? */
+    #piesModal { position: fixed; inset: 0; z-index: 3000; display: none; align-items: center; justify-content: center;
+      background: rgba(3,5,9,.55); padding: 16px; box-sizing: border-box; }
+    #piesModal.abierto { display: flex; }
+    #piesModal .pm-caja { position: relative; width: 440px; max-width: 100%; border-radius: 20px; overflow: hidden; padding: 0 24px 22px;
+      background: rgba(10,14,20,.9); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,.1);
+      box-shadow: 0 20px 60px rgba(0,0,0,.6); animation: piesEntra .5s cubic-bezier(.2,.8,.2,1); }
+    @keyframes piesEntra { from { opacity: 0; transform: translateY(18px) scale(.97); } to { opacity: 1; transform: none; } }
+    .pm-suelo { margin: 0 -24px 6px; height: 110px; }
+    #piesModal h2 { margin: 8px 0 6px; font-size: 22px; }
+    #piesModal p { margin: 0; color: #b9c7d6; font-size: 14px; line-height: 1.5; }
+    .pies-b1, .pies-b2 { display: block; width: 100%; margin-top: 12px; padding: 12px !important; border-radius: 12px; font-weight: 700; font-size: 14px; cursor: pointer; }
+    .pies-b1 { background: #ffb300 !important; color: #1a1205 !important; border: 0 !important; }
+    .pies-b2 { background: transparent !important; border: 1px solid rgba(255,255,255,.2) !important; }
+    .pies-priv { display: flex; gap: 8px; font-size: 12px; color: #8ea2b8; margin-top: 14px; line-height: 1.45; }
+    .pies-error { color: #ffb4a8; font-size: 13px; margin-top: 10px; }
+    .pies-error:empty { display: none; }
+    .pies-x { position: absolute; right: 10px; top: 10px; width: 32px; height: 32px; border-radius: 50%; padding: 0 !important;
+      background: rgba(0,0,0,.45) !important; border: 1px solid rgba(255,255,255,.2) !important; }
+    #piesAviso { position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%); z-index: 2500; display: none; align-items: center; gap: 12px;
+      padding: 10px 12px 10px 18px; border-radius: 30px; font-size: 14px; background: rgba(10,14,20,.85); border: 1px solid rgba(255,179,0,.55);
+      box-shadow: 0 10px 30px rgba(0,0,0,.5); white-space: nowrap; }
+    #piesAviso.visible { display: flex; }
+    #piesAviso button { padding: 5px 12px; border-radius: 20px; font-size: 13px; }
+    body.eligiendo-pies #globo { cursor: crosshair; }
+    #tarjetaPies { position: fixed; right: 14px; top: calc(var(--alto-barra, 60px) + 12px); z-index: 1003; width: 380px;
+      max-height: calc(100vh - var(--alto-barra, 60px) - 30px); overflow-y: auto; border-radius: 20px; display: none;
+      background: rgba(10,14,20,.86); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,.1);
+      box-shadow: 0 16px 50px rgba(0,0,0,.55); font-size: 13.5px; line-height: 1.4; }
+    #tarjetaPies.visible { display: block; animation: piesSube .7s cubic-bezier(.2,.8,.2,1); }
+    @keyframes piesSube { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
+    body.con-pies #ficha { display: none; }
+    .tp-cab { padding: 16px 52px 10px 20px; position: relative; }
+    .tp-ante { font-size: 11px; letter-spacing: .16em; color: #ffcf66; font-weight: 700; }
+    .tp-cab h3 { margin: 4px 0 2px; font-size: 20px; }
+    .tp-coord { font-size: 12px; color: #8ea2b8; }
+    .tp-suelo { position: relative; height: 190px; }
+    .tp-suelo svg { display: block; width: 100%; height: 100%; }
+    .tp-cifra { position: absolute; left: 20px; right: 20px; bottom: 14px; }
+    .tp-cifra b { display: block; font-size: 58px; line-height: 1; font-weight: 900; letter-spacing: -.02em; color: #fff; text-shadow: 0 2px 20px rgba(0,0,0,.85); }
+    .tp-cifra span { display: block; font-size: 13px; color: #efe3cc; margin-top: 5px; text-shadow: 0 1px 8px #000; }
+    .tp-filas { padding: 10px 20px 2px; }
+    .tp-fila { display: flex; gap: 12px; align-items: flex-start; padding: 9px 0; border-top: 1px solid rgba(255,255,255,.07); }
+    .tp-ic { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; flex: none; font-size: 15px; }
+    .tp-fila small { display: block; color: #8ea2b8; font-size: 11.5px; }
+    .tp-barra { height: 6px; border-radius: 4px; background: rgba(255,255,255,.1); margin-top: 6px; overflow: hidden; }
+    .tp-barra i { display: block; height: 100%; width: 0; border-radius: 4px; transition: width 1.4s cubic-bezier(.2,.8,.2,1) .6s; }
+    .tp-obs { display: flex; gap: 12px; margin: 6px 20px 0; padding: 10px; border-radius: 12px; background: rgba(255,255,255,.04); font-size: 12.5px; }
+    .tp-obs img { width: 64px; height: 64px; border-radius: 9px; object-fit: cover; flex: none; background: #1c2733; }
+    .tp-obs small { color: #8ea2b8; font-size: 11px; }
+    .tp-acc { display: flex; gap: 10px; padding: 14px 20px 10px; }
+    .tp-acc button { flex: 1; padding: 11px; border-radius: 12px; font-weight: 700; font-size: 13.5px; }
+    .tp-acc .tp-compartir { background: #ffb300; color: #1a1205; border: 0; }
+    .tp-acc .tp-otro { background: transparent; border: 1px solid rgba(255,255,255,.18); }
+    .tp-pie { font-size: 10.5px; color: #7f91a5; padding: 0 20px 14px; line-height: 1.45; }
+    .tp-pie a, .tp-obs a { color: #9fc5ff; }
+    .tp-cerrar { position: absolute; right: 14px; top: 14px; width: 30px; height: 30px; padding: 0 !important; border-radius: 50%;
+      background: rgba(255,255,255,.06) !important; border: 1px solid rgba(255,255,255,.16) !important; }
+    .tp-vacio { padding: 6px 20px 18px; color: #c9d6e3; }
     @media (min-width: 901px) {
       body.menu-abierto #globo { transform: translateX(165px); }
       body.menu-abierto #leyenda { opacity: 0; pointer-events: none; }
@@ -287,6 +349,10 @@
       .pm-contenido { padding-top: 16px; }
       .pm-cab { display: flex; align-items: center; gap: 10px; font-weight: 800; }
       .pm-cab .logo { width: 22px; height: 22px; }
+      #tarjetaPies { left: 0; right: 0; top: auto; bottom: 0; width: auto; max-height: 70vh; border-radius: 22px 22px 0 0; }
+      .tp-suelo { height: 160px; }
+      .tp-cifra b { font-size: 50px; }
+      #piesAviso { bottom: 18px; font-size: 13px; }
       .leaflet-control-attribution { font-size: 9px; }
       #aviso { font-size: 11px; margin-left: 0; }
       #leyenda { top: auto; bottom: 10px; left: 10px; width: calc(100vw - 46px); padding: 8px 12px; }
@@ -320,6 +386,7 @@
         <button id="btn2d">Mapa 2D</button>
       </div>
       <button id="btnRecorrido" class="destacado pm-item">▶ Recorridos narrados</button>
+      <button id="btnPies" class="pm-item">📍 ¿Qué hay bajo tus pies?</button>
       <h4 class="pm-item">Capa de datos</h4>
       <select id="selCapa" aria-label="Capa de datos" class="pm-item">
         <option value="">Sin capa (solo la Tierra)</option>
@@ -362,6 +429,22 @@
   <div id="leyenda"></div>
   <div id="creditoSat"></div>
   <div id="avisoOrbita"></div>
+
+  <div id="piesModal" role="dialog" aria-modal="true" aria-labelledby="piesTitulo">
+    <div class="pm-caja">
+      <div class="pm-suelo" id="piesSueloModal"></div>
+      <h2 id="piesTitulo">¿Qué hay bajo tus pies?</h2>
+      <p>Bajo cada paso hay una red de hongos que alimenta a las plantas. Elegí un lugar y te mostramos cuánta hay.</p>
+      <button id="piesUbicacion" class="pies-b1">📍 Usar mi ubicación</button>
+      <button id="piesElegir" class="pies-b2">🌍 Elegir un punto en el globo</button>
+      <div class="pies-priv"><span>🔒</span><span>Tu ubicación no se guarda ni se envía a Micelia. Se redondea a unos 10 km y solo se usa
+        para buscar el nombre del lugar (OpenStreetMap) y hongos observados cerca (iNaturalist).</span></div>
+      <div id="piesError" class="pies-error"></div>
+      <button id="piesCerrar" class="pies-x" aria-label="Cerrar">✕</button>
+    </div>
+  </div>
+  <div id="piesAviso">Tocá cualquier punto del globo <button id="piesCancelar">Cancelar</button></div>
+  <div id="tarjetaPies" aria-live="polite"></div>
 
   <div id="globo"></div>
   <div id="mapa"></div>
@@ -575,7 +658,7 @@
       <p>Este sitio no usa cookies, no tiene publicidad, no mide visitas y no guarda datos de quienes lo
          visitan. Para funcionar, tu navegador pide recursos a servicios externos, que reciben esa consulta
          (y tu dirección IP) como cualquier visita a sus sitios: unpkg.com (librerías del globo y del mapa),
-         EOX (imágenes satelitales), NASA GIBS (modo noche), CelesTrak (órbitas de satélites, solo si activás «Hongos en órbita»), iNaturalist (fotos de hongos) y Wikimedia
+         EOX (imágenes satelitales), NASA GIBS (modo noche), CelesTrak (órbitas de satélites, solo si activás «Hongos en órbita»), OpenStreetMap (nombre del lugar en «¿Qué hay bajo tus pies?»), iNaturalist (fotos de hongos) y Wikimedia
          Commons (fotos de paisajes). Cada uno tiene su propia política de privacidad.</p>
 
       <h3>Contacto</h3>
@@ -1067,8 +1150,8 @@
       .ringMaxRadius(d => d.radio)
       .ringPropagationSpeed(d => d.velocidad)
       .ringRepeatPeriod(d => d.periodo)
-      .onGlobeClick(({ lat, lng }, ev) => { if (!tocarEstacion(ev)) mostrarFicha(lat, lng); })
-      .onHexClick((h, ev, { lat, lng }) => mostrarFicha(lat, lng))
+      .onGlobeClick(({ lat, lng }, ev) => { if (eligiendoPies) { mostrarPies(lat, lng); return; } if (!tocarEstacion(ev)) { cerrarTarjetaPies(); mostrarFicha(lat, lng); } })
+      .onHexClick((h, ev, { lat, lng }) => { if (eligiendoPies) { mostrarPies(lat, lng); return; } cerrarTarjetaPies(); mostrarFicha(lat, lng); })
       .hexBinPointLat("lat").hexBinPointLng("lng").hexBinPointWeight("n")
       .hexBinResolution(2)
       .hexMargin(0.12)
@@ -1917,6 +2000,327 @@
     });
     // El globo se corre al abrir el menú: avisarle a globe.gl que cambió su posición en pantalla
     document.getElementById("globo").addEventListener("transitionend", () => window.dispatchEvent(new Event("resize")));
+
+    // ---------- ¿QUÉ HAY BAJO TUS PIES? ----------
+    // Una tarjeta personal con la red de hongos de un lugar, y una imagen para compartir.
+    const PROF_CM = 15;          // las densidades de Stewart et al. (2026) corresponden a los primeros 15 cm del suelo
+    const EVEREST_KM = 8.849;
+    let eligiendoPies = false, piesActual = null;
+    const piesModal = document.getElementById("piesModal"), tarjetaPies = document.getElementById("tarjetaPies");
+
+    // Corte de suelo: pasto arriba, raíces color madera y una red de hifas blancas
+    function svgSuelo(w, h, arriba, semilla, nHifas) {
+      let x0 = semilla * 9301 + 49297;
+      const az = () => (x0 = (x0 * 9301 + 49297) % 233280) / 233280;
+      const hifas = [], raices = [];
+      function hifa(x, y, a, L, g, p) {
+        let d = "M" + x.toFixed(1) + " " + y.toFixed(1);
+        const pasos = Math.max(3, Math.round(L / 18));
+        for (let k = 0; k < pasos; k++) {
+          a += (az() - 0.5) * 0.6;
+          const l = L / pasos, nx = x + Math.cos(a) * l, ny = y + Math.sin(a) * l;
+          d += " Q" + ((x + nx) / 2 + Math.sin(a) * (az() - .5) * 6).toFixed(1) + " " + ((y + ny) / 2 - Math.cos(a) * (az() - .5) * 6).toFixed(1) +
+            " " + nx.toFixed(1) + " " + ny.toFixed(1);
+          if (p < 4 && az() < 0.38 - p * 0.05) hifa(nx, ny, a + (az() < .5 ? -1 : 1) * (0.5 + az() * 0.6), L * (0.4 + az() * 0.3), g * 0.68, p + 1);
+          x = nx; y = ny;
+          if (y < arriba - 2 || y > h + 10 || x < -10 || x > w + 10) break;
+        }
+        hifas.push("<path class='hf' d='" + d + "' stroke-width='" + g.toFixed(2) + "' opacity='" + (0.85 - p * 0.12).toFixed(2) + "'/>");
+      }
+      function raiz(x, y, a, L, g, p) {
+        const nx = x + Math.cos(a) * L, ny = y + Math.sin(a) * L;
+        raices.push("<path d='M" + x.toFixed(1) + " " + y.toFixed(1) + " Q" + ((x + nx) / 2 + (az() - .5) * 16).toFixed(1) + " " + ((y + ny) / 2).toFixed(1) +
+          " " + nx.toFixed(1) + " " + ny.toFixed(1) + "' stroke-width='" + g.toFixed(2) + "'/>");
+        if (p < 3) [-1, 1].forEach(sg => { if (az() < 0.75) raiz(nx, ny, a + sg * (0.3 + az() * 0.5), L * 0.65, g * 0.6, p + 1); });
+      }
+      for (let i = 0; i < 5; i++) raiz(w * (i + .5) / 5 + (az() - .5) * 30, arriba, Math.PI / 2 + (az() - .5) * .4, h * (0.3 + az() * 0.15), 3.2, 0);
+      for (let i = 0; i < nHifas; i++) {
+        const x = w * (i + .5) / nHifas + (az() - .5) * 40;
+        hifa(x, arriba + 8 + az() * 22, Math.PI / 2 + (az() - .5) * 2.4, h * (0.5 + az() * 0.4), 1.3, 0);
+        hifa(x, arriba + 20 + az() * 40, (az() < .5 ? 0 : Math.PI) + (az() - .5), w * (0.25 + az() * 0.2), 1.1, 1);
+      }
+      let pasto = "";
+      for (let i = 0; i < w / 6; i++) {
+        const x = i * 6 + (az() - .5) * 4, hh = 6 + az() * 12, a = (az() - .5) * .8;
+        pasto += "<path d='M" + x.toFixed(1) + " " + arriba + " q" + (a * hh * .5).toFixed(1) + " " + (-hh * .6).toFixed(1) + " " + (a * hh).toFixed(1) + " " + (-hh).toFixed(1) + "'/>";
+      }
+      const id = "sg" + semilla;
+      return "<svg viewBox='0 0 " + w + " " + h + "' preserveAspectRatio='xMidYMid slice' aria-hidden='true'><defs><linearGradient id='" + id + "' x1='0' y1='0' x2='0' y2='1'>" +
+        "<stop offset='0' stop-color='#3a2a1b'/><stop offset='.5' stop-color='#22180f'/><stop offset='1' stop-color='#120c07'/></linearGradient></defs>" +
+        "<rect x='0' y='" + arriba + "' width='" + w + "' height='" + (h - arriba) + "' fill='url(#" + id + ")'/>" +
+        "<g fill='none' stroke='#8a6a3e' stroke-linecap='round' opacity='.9'>" + raices.join("") + "</g>" +
+        "<g fill='none' stroke='#f4efe4' stroke-linecap='round'>" + hifas.join("") + "</g>" +
+        "<g fill='none' stroke='#5f8f4a' stroke-width='1.4' opacity='.85'>" + pasto + "</g>" +
+        "<line x1='0' y1='" + arriba + "' x2='" + w + "' y2='" + arriba + "' stroke='#6b8f4e' stroke-width='2'/></svg>";
+    }
+    function crecerHifas(contenedor) {
+      if (sinMovimiento) return;
+      const ps = contenedor.querySelectorAll("path.hf");
+      ps.forEach(p => { const L = p.getTotalLength(); p.style.strokeDasharray = L; p.style.strokeDashoffset = L; });
+      requestAnimationFrame(() => requestAnimationFrame(() => ps.forEach((p, i) => {
+        p.style.transition = "stroke-dashoffset 1.6s cubic-bezier(.3,.6,.3,1) " + (0.15 + (i % 9) * 0.07).toFixed(2) + "s";
+        p.style.strokeDashoffset = 0;
+      })));
+    }
+
+    // Percentil por superficie (ponderado por la latitud) de cada capa, calculado una sola vez
+    const histogramas = {};
+    function percentilEn(c, v) {
+      if (!c.valores) return null;
+      if (!histogramas[c.id]) {
+        const W = window.GRILLA_ANCHO, H = window.GRILLA_ALTO, hist = new Float64Array(255);
+        for (let f = 0; f < H; f++) {
+          const peso = Math.cos((90 - (f + 0.5) * 180 / H) * Math.PI / 180);
+          for (let k = f * W, fin = k + W; k < fin; k++) { const q = c.valores[k]; if (q !== 255) hist[q] += peso; }
+        }
+        let total = 0; hist.forEach(x => total += x);
+        histogramas[c.id] = { hist, total };
+      }
+      const { hist, total } = histogramas[c.id];
+      const q = Math.round((v - c.min) / (c.max - c.min) * 254);
+      let debajo = 0; for (let i = 0; i < q; i++) debajo += hist[i];
+      return Math.round((debajo + hist[q] / 2) / total * 100);
+    }
+
+    // Nombre del lugar con OpenStreetMap (Nominatim), con caché para no repetir pedidos
+    const cacheLugar = {};
+    function nombreLugar(lat, lng) {
+      const clave = lat.toFixed(2) + "," + lng.toFixed(2);
+      if (!cacheLugar[clave]) {
+        cacheLugar[clave] = fetch("https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=10&accept-language=es&lat=" +
+          lat.toFixed(2) + "&lon=" + lng.toFixed(2)).then(r => r.ok ? r.json() : null).then(j => {
+            if (!j || !j.address) return null;
+            const a = j.address;
+            const lugar = a.city || a.town || a.village || a.hamlet || a.municipality || a.county || a.state_district || a.state || "";
+            const region = a.state && a.state !== lugar ? a.state : "";
+            return { titulo: [lugar, region].filter(Boolean).join(", ") || j.display_name, pais: a.country || "" };
+          }).catch(() => null);
+      }
+      return cacheLugar[clave];
+    }
+    function coordenadas(lat, lng) {
+      return Math.abs(lat).toFixed(2).replace(".", ",") + "° " + (lat >= 0 ? "N" : "S") + " · " +
+        Math.abs(lng).toFixed(2).replace(".", ",") + "° " + (lng >= 0 ? "E" : "O");
+    }
+    const nf = (v, d = 0) => v.toLocaleString("es-AR", { maximumFractionDigits: d, minimumFractionDigits: d });
+
+    function abrirPies() {
+      cerrarPanel();
+      document.getElementById("piesError").textContent = "";
+      const suelo = document.getElementById("piesSueloModal");
+      suelo.innerHTML = svgSuelo(440, 110, 40, 9, 6);
+      piesModal.classList.add("abierto");
+      crecerHifas(suelo);
+    }
+    function cerrarPiesModal() { piesModal.classList.remove("abierto"); }
+    function empezarEleccion() {
+      cerrarPiesModal();
+      if (document.getElementById("globo").style.display === "none") document.getElementById("btn3d").click();
+      eligiendoPies = true;
+      document.body.classList.add("eligiendo-pies");
+      document.getElementById("piesAviso").classList.add("visible");
+    }
+    function terminarEleccion() {
+      eligiendoPies = false;
+      document.body.classList.remove("eligiendo-pies");
+      document.getElementById("piesAviso").classList.remove("visible");
+    }
+    function usarUbicacion() {
+      const err = document.getElementById("piesError");
+      if (!navigator.geolocation) { err.textContent = "Este navegador no permite usar la ubicación. Elegí un punto en el globo."; return; }
+      err.textContent = "Buscando tu ubicación…";
+      navigator.geolocation.getCurrentPosition(p => {
+        // Se redondea a 0,1° (unos 10 km): alcanza para los mapas y protege la ubicación exacta
+        const lat = Math.round(p.coords.latitude * 10) / 10, lng = Math.round(p.coords.longitude * 10) / 10;
+        cerrarPiesModal();
+        mostrarPies(lat, lng);
+      }, e => {
+        err.textContent = e.code === 1 ? "No diste permiso para usar la ubicación. Podés elegir un punto en el globo."
+          : "No se pudo obtener la ubicación. Probá elegir un punto en el globo.";
+      }, { enableHighAccuracy: false, timeout: 12000, maximumAge: 600000 });
+    }
+
+    function mostrarPies(lat, lng) {
+      terminarEleccion();
+      cerrarPanel();
+      if (recorridoActivo()) return;
+      if (document.getElementById("globo").style.display === "none") document.getElementById("btn3d").click();
+      const celular = window.innerWidth <= 700;
+      globo.controls().autoRotate = false;
+      // En el celular la tarjeta sube desde abajo: la cámara apunta un poco más al sur para que el lugar quede visible arriba
+      globo.pointOfView({ lat: celular ? lat - 9 : lat, lng: celular ? lng : lng + 6, altitude: celular ? 1.15 : 0.9 }, 2200);
+      marcarPunto(lat, lng);
+      document.body.classList.add("con-pies");
+      const cH = capaPorId.hifas, cA = capaPorId.am_riqueza, cW = capaPorId.wdpa;
+      const h = cH ? valorEn(cH, lat, lng) : null;
+      const token = nuevoToken("piesObs");
+      let html = "<div class='tp-cab'><div class='tp-ante'>BAJO TUS PIES</div><h3 id='tpLugar'>" + coordenadas(lat, lng) + "</h3>" +
+        "<div class='tp-coord' id='tpCoord'>" + coordenadas(lat, lng) + "</div><button class='tp-cerrar' id='tpCerrar' aria-label='Cerrar'>✕</button></div>";
+      if (h === null) {
+        piesActual = null;
+        html += "<div class='tp-vacio'>Acá no hay suelo con datos: es mar, hielo o un lugar que los mapas de SPUN no cubren. Probá otro punto en tierra firme.</div>" +
+          "<div class='tp-acc'><button class='tp-otro' id='tpOtro'>Elegir otro lugar</button></div>";
+      } else {
+        const km = Math.round(h * PROF_CM * 10000 / 1000 / 5) * 5;   // m/cm³ × cm³ bajo 1 m² (15 cm) → km
+        const ev = Math.round(km / EVEREST_KM);
+        const pH = percentilEn(cH, h);
+        const a = cA ? valorEn(cA, lat, lng) : null, pA = a !== null ? percentilEn(cA, a) : null;
+        const w = cW ? valorEn(cW, lat, lng) : null;
+        piesActual = { lat, lng, km, ev, pH, a, pA, w, lugar: null, pais: "" };
+        html += "<div class='tp-suelo' id='tpSuelo'>" + svgSuelo(380, 190, 30, 1 + Math.abs(Math.round(lat * 7 + lng * 3)) % 50, 7) +
+          "<div class='tp-cifra'><b>" + nf(km) + " km</b><span>de hifas en los primeros " + PROF_CM + " cm de cada metro cuadrado de suelo · " +
+          "unas " + nf(ev) + " veces la altura del Everest</span></div></div><div class='tp-filas'>" +
+          "<div class='tp-fila'><div class='tp-ic' style='background:rgba(253,231,36,.14)'>🕸</div><div style='flex:1'>Más hifas que el <b>" + pH +
+          " %</b> de la tierra del planeta<div class='tp-barra'><i style='background:linear-gradient(90deg,#20908c,#fde724)' data-w='" + pH + "'></i></div></div></div>" +
+          (a !== null ? "<div class='tp-fila'><div class='tp-ic' style='background:rgba(105,183,100,.16)'>🍄</div><div>Unos <b>" + nf(a) +
+            " tipos de hongos AM</b> cada 100 m²<small>Más que en el " + pA + " % de la tierra del planeta</small></div></div>" : "") +
+          (w !== null ? "<div class='tp-fila'><div class='tp-ic' style='background:rgba(64,220,170,.14)'>🛡</div><div><b>" + Math.round(w * 100) +
+            " %</b> de la zona está protegida<small>Áreas protegidas de la WDPA, en celdas de unos 39 km</small></div></div>" : "") +
+          "</div><div class='tp-obs' id='tpObs'><div><small>Buscando hongos observados cerca…</small></div></div>" +
+          "<div class='tp-acc'><button class='tp-compartir' id='tpCompartir'>↗ Compartir mi tarjeta</button><button class='tp-otro' id='tpOtro'>Otro lugar</button></div>";
+      }
+      html += "<div class='tp-pie'>Estimaciones de modelos de SPUN (Stewart et al., 2026; Van Nuland et al., 2025), no mediciones directas. " +
+        "Cuánta hifa hay: densidad estimada en los primeros " + PROF_CM + " cm de suelo. Nombre del lugar: © <a href='https://www.openstreetmap.org/copyright' target='_blank' rel='noopener'>OpenStreetMap</a>.</div>";
+      tarjetaPies.innerHTML = html;
+      tarjetaPies.classList.remove("visible"); void tarjetaPies.offsetWidth; tarjetaPies.classList.add("visible");
+      tarjetaPies.scrollTop = 0;
+      const suelo = document.getElementById("tpSuelo");
+      if (suelo) crecerHifas(suelo);
+      requestAnimationFrame(() => requestAnimationFrame(() => tarjetaPies.querySelectorAll(".tp-barra i").forEach(i => { i.style.width = i.dataset.w + "%"; })));
+      document.getElementById("tpCerrar").onclick = cerrarTarjetaPies;
+      document.getElementById("tpOtro").onclick = abrirPies;
+      const bc = document.getElementById("tpCompartir");
+      if (bc) bc.onclick = compartirPies;
+      nombreLugar(lat, lng).then(n => {
+        if (token !== tokensFotos.piesObs || !n) return;
+        document.getElementById("tpLugar").textContent = n.titulo;
+        document.getElementById("tpCoord").textContent = (n.pais ? n.pais + " · " : "") + coordenadas(lat, lng);
+        if (piesActual) { piesActual.lugar = n.titulo; piesActual.pais = n.pais; }
+      });
+      if (h !== null) hongosCerca(lat, lng, 30).then(({ lista }) => {
+        const c = document.getElementById("tpObs");
+        if (!c || token !== tokensFotos.piesObs) return;
+        if (!lista.length) { c.innerHTML = "<div><small>Todavía no hay hongos con foto de libre uso observados a menos de 30 km. ¡Podés ser la primera persona en registrarlos en iNaturalist!</small></div>"; return; }
+        const o = lista[0];
+        c.innerHTML = "<a href='" + escaparHTML(o.enlace) + "' target='_blank' rel='noopener'><img src='" + escaparHTML(o.foto) + "' alt='" +
+          escaparHTML(o.comun || o.cientifico) + "'></a><div><b>Observado cerca</b><br>" + (o.comun ? escaparHTML(o.comun) + " · " : "") +
+          "<i>" + escaparHTML(o.cientifico) + "</i><br><small>© " + escaparHTML(o.autor) + " · " + enlaceLicencia(o.licencia) +
+          " · <a href='https://www.inaturalist.org' target='_blank' rel='noopener'>iNaturalist</a></small></div>";
+      }).catch(() => { const c = document.getElementById("tpObs"); if (c) c.style.display = "none"; });
+    }
+    function cerrarTarjetaPies() {
+      tarjetaPies.classList.remove("visible");
+      document.body.classList.remove("con-pies");
+    }
+    function recorridoActivo() { return document.body.classList.contains("en-recorrido"); }
+
+    // Imagen para compartir (formato historia, 1080 × 1920), dibujada en el navegador
+    function cargarImagen(src) {
+      return new Promise((ok, mal) => { const i = new Image(); i.onload = () => ok(i); i.onerror = mal; i.src = src; });
+    }
+    function lineas(ctx, texto, x, y, ancho, alto) {
+      const pal = texto.split(" "); let l = "";
+      for (const p of pal) {
+        if (ctx.measureText(l + p).width > ancho && l) { ctx.fillText(l.trim(), x, y); y += alto; l = ""; }
+        l += p + " ";
+      }
+      ctx.fillText(l.trim(), x, y); return y + alto;
+    }
+    async function imagenPies(d) {
+      const W = 1080, H = 1920, cv = document.createElement("canvas");
+      cv.width = W; cv.height = H;
+      const ctx = cv.getContext("2d");
+      ctx.fillStyle = "#07090d"; ctx.fillRect(0, 0, W, H);
+      // Mapa de la zona: recorte de la textura de densidad de hifas alrededor del lugar
+      const MAPA_H = 780;
+      ctx.fillStyle = "#0c1a2e"; ctx.fillRect(0, 0, W, MAPA_H);
+      try {
+        const tex = await cargarImagen(capaPorId.hifas.textura);
+        const anchoGrados = 26, altoGrados = anchoGrados * MAPA_H / W;
+        const px = tex.width / 360, py = tex.height / 180;
+        ctx.drawImage(tex, (d.lng + 180 - anchoGrados / 2) * px, (90 - d.lat - altoGrados / 2) * py, anchoGrados * px, altoGrados * py, 0, 0, W, MAPA_H);
+      } catch (e) {}
+      const g1 = ctx.createLinearGradient(0, 0, 0, MAPA_H);
+      g1.addColorStop(0, "rgba(7,9,13,.35)"); g1.addColorStop(.55, "rgba(7,9,13,0)"); g1.addColorStop(1, "#07090d");
+      ctx.fillStyle = g1; ctx.fillRect(0, 0, W, MAPA_H);
+      // Marca del lugar
+      const cx = W / 2, cy = MAPA_H / 2;
+      const halo = ctx.createRadialGradient(cx, cy, 0, cx, cy, 110);
+      halo.addColorStop(0, "rgba(0,0,0,.55)"); halo.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = halo; ctx.beginPath(); ctx.arc(cx, cy, 110, 0, 7); ctx.fill();
+      ctx.strokeStyle = "rgba(255,179,0,.6)"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(cx, cy, 62, 0, 7); ctx.stroke();
+      ctx.strokeStyle = "rgba(255,179,0,.9)"; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(cx, cy, 28, 0, 7); ctx.stroke();
+      ctx.fillStyle = "#ffb300"; ctx.beginPath(); ctx.arc(cx, cy, 11, 0, 7); ctx.fill();
+      // Corte de suelo con hifas
+      const svg = svgSuelo(1080, 860, 60, 4 + Math.abs(Math.round(d.lat * 7 + d.lng * 3)) % 40, 16);
+      try {
+        const img = await cargarImagen("data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg.replace("<svg ", "<svg xmlns='http://www.w3.org/2000/svg' width='1080' height='860' ")));
+        ctx.globalAlpha = 0.75; ctx.drawImage(img, 0, 700); ctx.globalAlpha = 1;
+      } catch (e) {}
+      const g2 = ctx.createLinearGradient(0, 760, 0, 1560);
+      g2.addColorStop(0, "rgba(7,9,13,.15)"); g2.addColorStop(.4, "rgba(7,9,13,.55)"); g2.addColorStop(.8, "rgba(7,9,13,.9)"); g2.addColorStop(1, "#07090d");
+      ctx.fillStyle = g2; ctx.fillRect(0, 760, W, 800);
+      // Marca de Micelia
+      try {
+        const logo = await cargarImagen("data:image/svg+xml;charset=utf-8," + encodeURIComponent(document.querySelector(".menu-boton .logo").outerHTML
+          .replace("<svg ", "<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64' ")));
+        ctx.drawImage(logo, 70, 62, 64, 64);
+      } catch (e) {}
+      const F = "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
+      ctx.textBaseline = "alphabetic";
+      ctx.fillStyle = "#ffe3a3"; ctx.font = "800 40px " + F; ctx.fillText("MICELIA", 152, 108);
+      ctx.fillStyle = "#ffcf66"; ctx.font = "700 30px " + F; ctx.fillText("BAJO MIS PIES", 70, 840);
+      ctx.fillStyle = "#fff"; ctx.font = "700 52px " + F;
+      let y = lineas(ctx, d.lugar || coordenadas(d.lat, d.lng), 70, 905, 940, 60);
+      ctx.shadowColor = "rgba(0,0,0,.85)"; ctx.shadowBlur = 40;
+      ctx.font = "900 230px " + F; ctx.fillText(nf(d.km) + " km", 62, Math.max(y + 190, 1180));
+      ctx.shadowBlur = 14;
+      ctx.fillStyle = "#f1e6d2"; ctx.font = "400 40px " + F;
+      y = lineas(ctx, "de hifas de hongos en los primeros " + PROF_CM + " cm de cada metro cuadrado de suelo: unas " + nf(d.ev) + " veces la altura del Everest",
+        70, Math.max(y + 260, 1250), 940, 54);
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = "#dfe8f1"; ctx.font = "400 36px " + F;
+      const datos = ["🕸  Más hifas que el " + d.pH + " % del planeta"];
+      if (d.a !== null) datos.push("🍄  " + nf(d.a) + " tipos de hongos AM cada 100 m²");
+      if (d.w !== null) datos.push("🛡  " + Math.round(d.w * 100) + " % de la zona protegida");
+      y = Math.max(y + 40, 1480);
+      datos.forEach(t => { ctx.fillText(t, 70, y); y += 58; });
+      ctx.fillStyle = "#fff"; ctx.font = "700 40px " + F; ctx.fillText("¿Y bajo los tuyos?", 70, H - 130);
+      ctx.fillStyle = "#ffcf66"; ctx.font = "400 32px " + F; ctx.fillText("guidoparra.github.io/micelia", 70, H - 80);
+      ctx.fillStyle = "#7f91a5"; ctx.font = "400 20px " + F; ctx.textAlign = "right";
+      ctx.fillText("Estimaciones de modelos de SPUN · CC BY 4.0", W - 70, H - 108);
+      ctx.fillText("Lugar: © OpenStreetMap", W - 70, H - 80);
+      ctx.textAlign = "left";
+      return new Promise(ok => cv.toBlob(ok, "image/png"));
+    }
+    async function compartirPies() {
+      if (!piesActual) return;
+      const b = document.getElementById("tpCompartir");
+      b.textContent = "Preparando imagen…"; b.disabled = true;
+      try {
+        const blob = await imagenPies(piesActual);
+        const archivo = new File([blob], "micelia-bajo-mis-pies.png", { type: "image/png" });
+        const texto = "Bajo mis pies hay " + nf(piesActual.km) + " km de hifas de hongos en cada metro cuadrado. ¿Y bajo los tuyos? https://guidoparra.github.io/micelia/";
+        if (navigator.canShare && navigator.canShare({ files: [archivo] })) {
+          await navigator.share({ files: [archivo], title: "Micelia · Bajo mis pies", text: texto }).catch(() => {});
+        } else {
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(blob); a.download = archivo.name;
+          document.body.appendChild(a); a.click(); a.remove();
+          setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+        }
+      } catch (e) { console.warn("No se pudo crear la imagen", e); }
+      b.textContent = "↗ Compartir mi tarjeta"; b.disabled = false;
+    }
+
+    document.getElementById("btnPies").addEventListener("click", abrirPies);
+    document.getElementById("piesUbicacion").addEventListener("click", usarUbicacion);
+    document.getElementById("piesElegir").addEventListener("click", empezarEleccion);
+    document.getElementById("piesCerrar").addEventListener("click", cerrarPiesModal);
+    document.getElementById("piesCancelar").addEventListener("click", terminarEleccion);
+    piesModal.addEventListener("click", e => { if (e.target === piesModal) cerrarPiesModal(); });
+    document.addEventListener("keydown", e => { if (e.key === "Escape") { cerrarPiesModal(); terminarEleccion(); cerrarTarjetaPies(); } });
+
     function abrirApoya() { cerrarAcerca(); document.getElementById("apoya").style.display = "block"; }
     function cerrarApoya() { document.getElementById("apoya").style.display = "none"; }
     document.getElementById("btnApoya").addEventListener("click", abrirApoya);
