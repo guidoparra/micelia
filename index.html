@@ -2079,7 +2079,7 @@
       const { hist, total } = histogramas[c.id];
       const q = Math.round((v - c.min) / (c.max - c.min) * 254);
       let debajo = 0; for (let i = 0; i < q; i++) debajo += hist[i];
-      return Math.round((debajo + hist[q] / 2) / total * 100);
+      return Math.floor(debajo / total * 100);
     }
 
     // Nombre del lugar con OpenStreetMap (Nominatim), con caché para no repetir pedidos
@@ -2166,16 +2166,27 @@
         const pH = percentilEn(cH, h);
         const a = cA ? valorEn(cA, lat, lng) : null, pA = a !== null ? percentilEn(cA, a) : null;
         const w = cW ? valorEn(cW, lat, lng) : null;
+        // Confiabilidad: extrapolación (> 5 % según el estudio) e incertidumbre (CV) del modelo de riqueza AM
+        const cE = capaPorId.am_extrap, cC = capaPorId.am_cv;
+        const ex = cE ? valorEn(cE, lat, lng) : null, cv = cC ? valorEn(cC, lat, lng) : null, pCv = cv !== null ? percentilEn(cC, cv) : null;
+        let conf = null;
+        if (ex !== null && cv !== null) {
+          if (ex > 0.05) conf = ["Baja", "#eb5757", "el modelo predice fuera de las condiciones de sus muestras de suelo (" + Math.round(ex * 100) + " % de la zona). Tomá las cifras con cautela."];
+          else if (pCv >= 75) conf = ["Media", "#ffb300", "el modelo no extrapola, pero sus predicciones varían más que en el " + pCv + " % del planeta."];
+          else conf = ["Alta", "#40dcaa", "el modelo no extrapola acá y su incertidumbre es baja (variación de " + nf(cv, 1) + " %)."];
+        }
         piesActual = { lat, lng, km, ev, pH, a, pA, w, lugar: null, pais: "" };
         html += "<div class='tp-suelo' id='tpSuelo'>" + svgSuelo(380, 190, 30, 1 + Math.abs(Math.round(lat * 7 + lng * 3)) % 50, 7) +
           "<div class='tp-cifra'><b>" + nf(km) + " km</b><span>de hifas en los primeros " + PROF_CM + " cm de cada metro cuadrado de suelo · " +
-          "unas " + nf(ev) + " veces la altura del Everest</span></div></div><div class='tp-filas'>" +
+          "unas " + nf(ev) + " veces la altura del Everest · promedio de una zona de unos 39 km</span></div></div><div class='tp-filas'>" +
           "<div class='tp-fila'><div class='tp-ic' style='background:rgba(253,231,36,.14)'>🕸</div><div style='flex:1'>Más hifas que el <b>" + pH +
           " %</b> de la tierra del planeta<div class='tp-barra'><i style='background:linear-gradient(90deg,#20908c,#fde724)' data-w='" + pH + "'></i></div></div></div>" +
           (a !== null ? "<div class='tp-fila'><div class='tp-ic' style='background:rgba(105,183,100,.16)'>🍄</div><div>Unos <b>" + nf(a) +
-            " tipos de hongos AM</b> cada 100 m²<small>Más que en el " + pA + " % de la tierra del planeta</small></div></div>" : "") +
+            " taxones de hongos AM</b> cada 100 m²<small>Más que en el " + pA + " % de la tierra del planeta</small></div></div>" : "") +
           (w !== null ? "<div class='tp-fila'><div class='tp-ic' style='background:rgba(64,220,170,.14)'>🛡</div><div><b>" + Math.round(w * 100) +
             " %</b> de la zona está protegida<small>Áreas protegidas de la WDPA, en celdas de unos 39 km</small></div></div>" : "") +
+          (conf ? "<div class='tp-fila'><div class='tp-ic' style='background:rgba(255,255,255,.06)'>🎯</div><div>Confiabilidad del modelo: <b style='color:" + conf[1] + "'>" +
+            conf[0] + "</b><small>Para la riqueza AM: " + conf[2] + "</small></div></div>" : "") +
           "</div><div class='tp-obs' id='tpObs'><div><small>Buscando hongos observados cerca…</small></div></div>" +
           "<div class='tp-acc'><button class='tp-compartir' id='tpCompartir'>↗ Compartir mi tarjeta</button><button class='tp-otro' id='tpOtro'>Otro lugar</button></div>";
       }
@@ -2281,7 +2292,7 @@
       ctx.shadowBlur = 0;
       ctx.fillStyle = "#dfe8f1"; ctx.font = "400 36px " + F;
       const datos = ["🕸  Más hifas que el " + d.pH + " % del planeta"];
-      if (d.a !== null) datos.push("🍄  " + nf(d.a) + " tipos de hongos AM cada 100 m²");
+      if (d.a !== null) datos.push("🍄  " + nf(d.a) + " taxones de hongos AM cada 100 m²");
       if (d.w !== null) datos.push("🛡  " + Math.round(d.w * 100) + " % de la zona protegida");
       y = Math.max(y + 40, 1480);
       datos.forEach(t => { ctx.fillText(t, 70, y); y += 58; });
