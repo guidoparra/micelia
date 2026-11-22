@@ -82,6 +82,17 @@
     .interruptor { display: flex; flex-direction: column; align-items: flex-start; position: relative; width: 100%;
       text-align: left; padding: 6px 52px 6px 4px !important; border-radius: 10px; }
     .interruptor:hover { background: rgba(255,255,255,.04) !important; }
+    /* Nombres y fronteras (Natural Earth) */
+    .et-pais { font: 600 11px/1 system-ui, sans-serif; letter-spacing: .18em; text-transform: uppercase; color: rgba(237,230,211,.82);
+      text-shadow: 0 0 4px #000, 0 0 8px rgba(0,0,0,.8); white-space: nowrap; pointer-events: none; }
+    .et-ciu { font: 500 11.5px/1 system-ui, sans-serif; color: #f2efe4; text-shadow: 0 0 3px #000, 0 0 7px rgba(0,0,0,.9);
+      white-space: nowrap; pointer-events: none; display: flex; align-items: center; gap: 5px; }
+    .et-ciu i { width: 5px; height: 5px; border-radius: 50%; background: #ede6d3; box-shadow: 0 0 0 1.5px rgba(9,17,12,.8); flex: none; }
+    .et-ciu.cap i { width: 7px; height: 7px; }
+    #globo .et-ciu { transform: translateX(calc(50% - 4px)); }
+    .et-l { pointer-events: none; }
+    .et-l > div { position: absolute; transform: translate(-50%, -50%); }
+    .et-l > .et-ciu { transform: translate(-4px, -50%); }
     .interruptor small { color: #8ea2b8; font-size: 11px; margin-top: 2px; }
     .interruptor::after { content: ""; position: absolute; right: 6px; top: 50%; margin-top: -10px; width: 36px; height: 20px;
       border-radius: 12px; background: rgba(255,255,255,.14); transition: background .3s; }
@@ -393,6 +404,7 @@
       </select>
       <div id="listaCapas" class="pm-item"></div>
       <h4 class="pm-item">Herramientas</h4>
+      <button id="btnNombres" class="interruptor pm-item" title="Nombres de países y ciudades, y fronteras">Nombres y fronteras<small>Países y ciudades</small></button>
       <button id="btn3dDatos" class="interruptor pm-item" title="Muestra la capa como columnas en relieve">Columnas 3D<small>La capa en relieve</small></button>
       <button id="btnNoche" class="interruptor pm-item" title="Luces nocturnas de la Tierra">Modo noche<small>Luces de las ciudades</small></button>
       <button id="btnOrbita" class="interruptor pm-item" title="Estaciones espaciales y satélites en tiempo real">Hongos en órbita<small>Estaciones y satélites en vivo</small></button>
@@ -535,6 +547,11 @@
          39 km. Para el análisis científico conviene usar los archivos originales. Las cifras de los
          recorridos provienen de las fuentes citadas en cada parada, aunque las leí a través de
          resúmenes de prensa y comunicados de los autores; las del recorrido «Hongos de Argentina» son un cálculo mío sobre los mapas.</p>
+
+      <h3>Nombres y fronteras</h3>
+      <p>Con «Nombres y fronteras» encendido, los países, las ciudades y los límites provienen de
+         <a href="https://www.naturalearthdata.com" target="_blank" rel="noopener">Natural Earth</a> (dominio público).
+         Son de escala mundial: sirven para ubicarse, no como cartografía oficial, y no expresan una posición sobre límites en disputa.</p>
 
       <h3>Satélites y meteoros</h3>
       <p>Con el modo «Hongos en órbita» encendido, los puntos que se mueven alrededor del globo son satélites reales, entre ellos la Estación Espacial
@@ -1909,6 +1926,129 @@
         if (pov.altitude < 1.6) globo.pointOfView({ lat: pov.lat, lng: pov.lng, altitude: 1.9 }, 1200);
       }
       pintarGlobo();
+    });
+
+    // ---------- NOMBRES Y FRONTERAS ----------
+    // Países, ciudades y fronteras de Natural Earth (dominio público). Apagado por defecto:
+    // el archivo se descarga recién la primera vez que se enciende.
+    let nombresActivos = false, ETQ = null, etqPedidas = null, nivelNombres = "", centroNombres = null;
+    const btnNombres = document.getElementById("btnNombres");
+    function cargarEtiquetas() {
+      if (!etqPedidas) etqPedidas = fetch("texturas/etiquetas.json").then(r => r.json()).then(d => {
+        ETQ = {
+          lineas: d.l.map(f => { const v = []; for (let i = 0; i < f.length; i += 2) v.push([f[i], f[i + 1]]); return v; }),
+          // prioridad: países primero (los más grandes antes), después capitales y ciudades por población
+          paises: d.p.map(([t, lat, lng, k]) => ({ t, lat, lng, k, tipo: "pais", pr: k })),
+          ciudades: d.c.map(([t, lat, lng, k, cap, pop]) => ({ t, lat, lng, k, cap, tipo: "ciu", pr: 100 - (cap ? 20 : 0) - Math.log10(pop + 10) }))
+        };
+      }).catch(() => { etqPedidas = null; });
+      return etqPedidas;
+    }
+    function elementoEtiqueta(d) {
+      const e = document.createElement("div");
+      if (d.tipo === "pais") { e.className = "et-pais"; e.textContent = d.t; }
+      else { e.className = "et-ciu" + (d.cap ? " cap" : ""); e.innerHTML = "<i></i>"; e.appendChild(document.createTextNode(d.t)); }
+      return e;
+    }
+    const RAD = Math.PI / 180;
+    function distanciaAngular(lat1, lng1, lat2, lng2) {
+      const c = Math.sin(lat1 * RAD) * Math.sin(lat2 * RAD) + Math.cos(lat1 * RAD) * Math.cos(lat2 * RAD) * Math.cos((lng1 - lng2) * RAD);
+      return Math.acos(Math.max(-1, Math.min(1, c))) / RAD;
+    }
+    // Un nombre tapado por un panel (tarjetas, leyenda, menú) no se muestra
+    function libreDePaneles(r) {
+      for (const [x, y] of [[r.left + 1, r.top + 1], [r.right - 1, r.bottom - 1], [(r.left + r.right) / 2, (r.top + r.bottom) / 2]]) {
+        const debajo = document.elementFromPoint(x, y);
+        if (!debajo || !debajo.closest("#globo, #mapa") || debajo.closest(".leaflet-control-container")) return false;
+      }
+      return true;
+    }
+    // Muestra cada nombre solo si no pisa a uno más importante ni queda bajo la barra superior
+    function despejar(lista, visibleFn) {
+      const ocupados = [];
+      lista.sort((a, b) => a.d.pr - b.d.pr);
+      for (const { el, d } of lista) {
+        let ver = visibleFn(d);
+        if (ver) {
+          const r = el.getBoundingClientRect();
+          ver = r.width > 0 && r.top > 64 && r.bottom < innerHeight - 24 && r.left > 4 && r.right < innerWidth - 4 &&
+            !ocupados.some(o => !(r.right + 3 < o.left || r.left - 3 > o.right || r.bottom + 1 < o.top || r.top - 1 > o.bottom)) &&
+            libreDePaneles(r);
+          if (ver) ocupados.push(r);
+        }
+        el.style.visibility = ver ? "visible" : "hidden";
+      }
+    }
+
+    // Globo 3D
+    const nodosGlobo = new Map();
+    globo.pathPoints(l => l).pathPointLat(p => p[0]).pathPointLng(p => p[1])
+      .pathColor(() => "rgba(237,230,211,.5)").pathStroke(null).pathPointAlt(0.004).pathTransitionDuration(0)
+      .htmlLat("lat").htmlLng("lng").htmlAltitude(0.005).htmlTransitionDuration(0)
+      .htmlElement(d => { const e = document.createElement("div"); e.appendChild(elementoEtiqueta(d)); e.style.visibility = "hidden"; nodosGlobo.set(d, e); return e; })
+      .htmlElementVisibilityModifier(() => {});
+    function elegirNombresGlobo(forzar) {
+      if (!nombresActivos || !ETQ || enPortada) { if (nivelNombres) { globo.pathsData([]); globo.htmlElementsData([]); nodosGlobo.clear(); nivelNombres = ""; } return; }
+      const pov = globo.pointOfView();
+      const nivel = pov.altitude > 1.2 ? "lejos" : pov.altitude > 0.75 ? "medio" : "cerca";
+      const movido = !centroNombres || distanciaAngular(pov.lat, pov.lng, centroNombres[0], centroNombres[1]) > 15;
+      if (!nivelNombres) globo.pathsData(ETQ.lineas);
+      if (nivel === nivelNombres && !movido && !forzar) return;
+      nivelNombres = nivel; centroNombres = [pov.lat, pov.lng];
+      let lista = ETQ.paises.filter(p => p.k <= (nivel === "lejos" ? 3 : 5));
+      if (nivel !== "lejos") lista = lista.concat(ETQ.ciudades.filter(c => c.k <= (nivel === "cerca" ? 4 : 2) &&
+        distanciaAngular(c.lat, c.lng, pov.lat, pov.lng) < 45));
+      nodosGlobo.clear();
+      globo.htmlElementsData(lista);
+      setTimeout(despejarGlobo, 80);
+    }
+    function despejarGlobo() {
+      if (!nombresActivos || !nivelNombres) return;
+      const pov = globo.pointOfView();
+      const horizonte = Math.acos(1 / (1 + pov.altitude)) / RAD - 4;
+      const limite = Math.min(pov.altitude > 1.2 ? 58 : 80, horizonte);
+      despejar([...nodosGlobo].map(([d, el]) => ({ d, el: el.firstChild })),
+        d => distanciaAngular(d.lat, d.lng, pov.lat, pov.lng) < limite);
+    }
+    let esperaNombres = 0;
+    globo.controls().addEventListener("change", () => {
+      if (!nombresActivos || esperaNombres) return;
+      esperaNombres = setTimeout(() => { esperaNombres = 0; elegirNombresGlobo(); despejarGlobo(); }, 120);
+    });
+    globo.controls().addEventListener("end", () => setTimeout(() => { elegirNombresGlobo(); despejarGlobo(); }, 150));
+    // la cámara también se mueve sola (giro automático y recorridos)
+    setInterval(() => { if (nombresActivos && nivelNombres) { elegirNombresGlobo(); despejarGlobo(); } }, 700);
+
+    // Mapa 2D
+    const paneNombres = mapa.createPane("nombres");
+    paneNombres.style.zIndex = 460;
+    paneNombres.style.pointerEvents = "none";
+    const grupoNombres2D = L.layerGroup();
+    let fronteras2D = null;
+    function actualizarNombres2D() {
+      grupoNombres2D.clearLayers();
+      if (!nombresActivos || !ETQ) { if (fronteras2D) mapa.removeLayer(fronteras2D); mapa.removeLayer(grupoNombres2D); return; }
+      if (!fronteras2D) fronteras2D = L.polyline(ETQ.lineas, { pane: "nombres", color: "#ede6d3", opacity: .5, weight: 1, interactive: false });
+      fronteras2D.addTo(mapa); grupoNombres2D.addTo(mapa);
+      const z = mapa.getZoom(), b = mapa.getBounds().pad(0.1);
+      let lista = ETQ.paises.filter(p => p.k <= (z < 3 ? 3 : z < 4.5 ? 5 : 7));
+      if (z >= 3) lista = lista.concat(ETQ.ciudades.filter(c => c.k <= (z < 4.5 ? 2 : 4)));
+      lista = lista.filter(d => b.contains([d.lat, d.lng]));
+      const nodos = lista.map(d => {
+        const el = elementoEtiqueta(d);
+        L.marker([d.lat, d.lng], { pane: "nombres", interactive: false, keyboard: false,
+          icon: L.divIcon({ className: "et-l", html: el, iconSize: null }) }).addTo(grupoNombres2D);
+        return { d, el };
+      });
+      despejar(nodos, () => true);
+    }
+    mapa.on("moveend zoomend", () => { if (nombresActivos) actualizarNombres2D(); });
+
+    btnNombres.addEventListener("click", () => {
+      nombresActivos = !nombresActivos;
+      btnNombres.classList.toggle("activo", nombresActivos);
+      const aplicar = () => { elegirNombresGlobo(true); actualizarNombres2D(); };
+      if (nombresActivos && !ETQ) cargarEtiquetas().then(aplicar); else aplicar();
     });
 
     document.getElementById("btnRecorrido").addEventListener("click", abrirMenu);

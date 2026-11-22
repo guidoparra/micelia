@@ -38,6 +38,7 @@ texturas/
 | Luces nocturnas (modo noche, mosaicos en vivo) | NASA Black Marble 2016 (VIIRS), servido por NASA EOSDIS GIBS | Dominio público |
 | Imagen de respaldo del mapa 2D | Blue Marble de la NASA, incluida en el paquete three-globe | Dominio público (NASA) / MIT |
 | Órbitas de satélites (cargadas en vivo) | CelesTrak, grupo «visual» (elementos orbitales públicos); posiciones calculadas en el navegador con [satellite.js](https://github.com/shashwatak/satellite-js) | Datos públicos / MIT |
+| Nombres de países y ciudades, y fronteras (opcional) | [Natural Earth](https://www.naturalearthdata.com), escalas 1:50 m, 1:110 m y 1:10 m | Dominio público |
 | Nombre de los lugares en «¿Qué hay bajo tus pies?» (en vivo) | © colaboradores de [OpenStreetMap](https://www.openstreetmap.org/copyright), servicio Nominatim | ODbL |
 | Fotos de paisajes (cargadas en vivo) | Wikimedia Commons; autor y licencia de cada foto se muestran junto a ella | CC BY, CC BY-SA o dominio público |
 | Fotos de hongos (cargadas en vivo) | iNaturalist, observaciones de grado de investigación | CC0, CC BY, CC BY-SA o CC BY-NC |
