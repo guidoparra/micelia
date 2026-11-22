@@ -2,7 +2,7 @@
 
 **Explorá la red que sostiene la vida.**
 
-🌐 **Ver la web:** https://guidoparra.github.io/micelia/
+🌐 **Ver la web:** https://redmicelia.ar/
 
 Micelia es una web educativa, gratuita y de código abierto para explorar el reino Fungi sobre un globo interactivo.
 Muestra mapas globales de hongos micorrícicos, áreas protegidas y la confiabilidad de los modelos,

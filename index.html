@@ -8,13 +8,13 @@
   <meta property="og:title" content="Micelia · Explorá la red que sostiene la vida">
   <meta property="og:site_name" content="Micelia">
   <meta property="og:description" content="Explorá sobre un globo dónde viven los hongos micorrícicos y cuánto de ese mundo subterráneo está protegido.">
-  <meta property="og:image" content="https://guidoparra.github.io/micelia/texturas/compartir.jpg">
+  <meta property="og:image" content="https://redmicelia.ar/texturas/compartir.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:url" content="https://guidoparra.github.io/micelia/">
+  <meta property="og:url" content="https://redmicelia.ar/">
   <meta property="og:locale" content="es_AR">
   <meta name="twitter:card" content="summary_large_image">
-  <link rel="canonical" href="https://guidoparra.github.io/micelia/">
+  <link rel="canonical" href="https://redmicelia.ar/">
   <meta property="og:type" content="website">
   <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cg%20stroke%3D%22%23ffb300%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20fill%3D%22none%22%3E%3Cpath%20d%3D%22M16%2016L6.5%208.5M16%2016L26.5%209.5M16%2016L9%2025.5M16%2016L25%2025M6.5%208.5L3.5%2014M26.5%209.5L28.5%203.5M9%2025.5L3.5%2023.5M25%2025L29%2020%22/%3E%3C/g%3E%3Cg%20fill%3D%22%23ffb300%22%3E%3Ccircle%20cx%3D%2216%22%20cy%3D%2216%22%20r%3D%223.6%22/%3E%3Ccircle%20cx%3D%226.5%22%20cy%3D%228.5%22%20r%3D%222.1%22/%3E%3Ccircle%20cx%3D%2226.5%22%20cy%3D%229.5%22%20r%3D%222.1%22/%3E%3Ccircle%20cx%3D%229%22%20cy%3D%2225.5%22%20r%3D%222.1%22/%3E%3Ccircle%20cx%3D%2225%22%20cy%3D%2225%22%20r%3D%222.1%22/%3E%3C/g%3E%3C/svg%3E">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="anonymous">
@@ -2297,7 +2297,7 @@
       y = Math.max(y + 40, 1480);
       datos.forEach(t => { ctx.fillText(t, 70, y); y += 58; });
       ctx.fillStyle = "#fff"; ctx.font = "700 40px " + F; ctx.fillText("¿Y bajo los tuyos?", 70, H - 130);
-      ctx.fillStyle = "#ffcf66"; ctx.font = "400 32px " + F; ctx.fillText("guidoparra.github.io/micelia", 70, H - 80);
+      ctx.fillStyle = "#ffcf66"; ctx.font = "400 32px " + F; ctx.fillText("redmicelia.ar", 70, H - 80);
       ctx.fillStyle = "#7f91a5"; ctx.font = "400 20px " + F; ctx.textAlign = "right";
       ctx.fillText("Estimaciones de modelos de SPUN · CC BY 4.0", W - 70, H - 108);
       ctx.fillText("Lugar: © OpenStreetMap", W - 70, H - 80);
@@ -2311,7 +2311,7 @@
       try {
         const blob = await imagenPies(piesActual);
         const archivo = new File([blob], "micelia-bajo-mis-pies.png", { type: "image/png" });
-        const texto = "Bajo mis pies hay " + nf(piesActual.km) + " km de hifas de hongos en cada metro cuadrado. ¿Y bajo los tuyos? https://guidoparra.github.io/micelia/";
+        const texto = "Bajo mis pies hay " + nf(piesActual.km) + " km de hifas de hongos en cada metro cuadrado. ¿Y bajo los tuyos? https://redmicelia.ar/";
         if (navigator.canShare && navigator.canShare({ files: [archivo] })) {
           await navigator.share({ files: [archivo], title: "Micelia · Bajo mis pies", text: texto }).catch(() => {});
         } else {
